@@ -15,8 +15,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// import { SafeAreaView } from 'react-native-safe-area-context'; // Removed to match Dashboard behavior
 
 const { width, height } = Dimensions.get('window');
 
@@ -142,17 +143,33 @@ export default function HomeScreen() {
   }, [user?.id]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>Welcome to</Text>
-          <Text style={[styles.shopName, { color: colors.textPrimary }]}>slotB.in</Text>
+        <View style={styles.headerLeft}>
+          {/* Avatar / Shop Logo */}
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{ uri: user?.avatar || user?.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.name || 'Partner') }}
+              style={styles.avatarImage}
+            />
+            <View style={styles.onlineBadge} />
+          </View>
+
+          <View style={styles.headerContent}>
+            <Text style={[styles.shopName, { color: colors.textPrimary }]}>{user?.shopName || 'My Salon'}</Text>
+            <Text style={[styles.dateText, { color: colors.textTertiary }]}>
+              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}
+            </Text>
+          </View>
         </View>
-        <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.bellButton, { backgroundColor: colors.surface }]}>
-          <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-          {notifications > 0 && <View style={[styles.bellBadge, { borderColor: colors.surface }]} />}
-        </TouchableOpacity>
+
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.headerActionButton, { backgroundColor: colors.surface }]}>
+            <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
+            {notifications > 0 && <View style={[styles.headerBadge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -390,49 +407,83 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 56,
+    paddingHorizontal: 20,
+    paddingTop: 29,
+    paddingBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 10, // Shifted down for visibility
-    marginBottom: 10,
+    marginBottom: -2,
   },
-  greeting: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginBottom: 0,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E2E8F0',
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#22C55E', // Green for online
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  headerContent: {
+    justifyContent: 'center',
+    flex: 1,
   },
   shopName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
-    letterSpacing: -0.25,
+    letterSpacing: -0.5,
+    marginBottom: 2,
   },
-  bellButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  dateText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  headerActionButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bellBadge: {
+  headerBadge: {
     position: 'absolute',
-    top: 8,
+    top: 10,
     right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#DC2626',
-    borderWidth: 1.5,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
   },
   scrollContent: {
     paddingBottom: 40,
+    paddingTop: 10,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 14,
   },
   sectionNoMargin: {
-    marginBottom: 20,
+    marginBottom: 1,
   },
   sectionLast: {
     marginBottom: 0,
@@ -442,21 +493,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 12,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    opacity: 0.7,
   },
   heroCarouselContainer: {
     paddingHorizontal: 0,
   },
   heroCard: {
+    // Match width/height logic but with fixes
     width: width - 40,
-    height: height * 0.38, // Made slightly smaller (from 0.45)
-    borderRadius: 16, // Reduced border radius
+    height: height * 0.38,
+    borderRadius: 0, // Super smooth corners (Matches user request for "corner issue" fix)
     justifyContent: 'center',
     padding: 24,
     marginHorizontal: 20,
-    backgroundColor: '#FFFFFF', // Matching the white background in the image
+    // Dynamic background for contrast safety, but keep light if theme requires
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden', // CRITICAL: Fixes content passing corners
   },
   heroContent: {
     alignItems: 'flex-start',
@@ -467,11 +524,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 8,
     lineHeight: 40,
+    color: '#000000', // Force black since card is white
   },
   heroSubtitle: {
-    fontSize: 15,
-    fontWeight: '400',
+    fontSize: 16,
+    fontWeight: '500',
     marginBottom: 24,
+    opacity: 0.8,
+    color: '#333333', // Force dark grey
   },
   heroButton: {
     paddingHorizontal: 24,
@@ -480,28 +540,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   adButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFF',
     letterSpacing: 0.5,
   },
   adIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -32,
-    marginBottom: 24,
-    gap: 8,
+    marginTop: -20, // Shifted down (from -40)
+    marginBottom: 30,
+    gap: 4,
+    zIndex: 10,
   },
   paginationDot: {
     width: 8,
@@ -511,7 +577,10 @@ const styles = StyleSheet.create({
   statusCard: {
     marginHorizontal: 20,
     padding: 10,
-    borderRadius: 20,
+    borderRadius: 30, // Consistent with Hero
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
   },
   statusMainRow: {
     flexDirection: 'row',
@@ -521,71 +590,84 @@ const styles = StyleSheet.create({
   statusInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 8,
   },
   statusIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     marginTop: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
   },
   statusTitle: {
     fontSize: 11,
     fontWeight: '700',
-    marginBottom: 2,
-    letterSpacing: 0.5,
+    marginBottom: 0,
+    letterSpacing: 1,
     textTransform: 'uppercase',
+    opacity: 0.8,
   },
   statusValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 0,
+    letterSpacing: -0.5,
   },
   smartBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 20,
     alignSelf: 'flex-start',
     marginTop: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   smartText: {
     fontSize: 11,
     fontWeight: '600',
   },
   switchTouchArea: {
-    padding: 8,
+    padding: 6,
   },
   switchContainer: {
-    transform: [{ scale: 1.2 }],
+    transform: [{ scale: 1.1 }],
+    padding: 4,
+    borderRadius: 10,
+    // Removed duplicate dark background/shadow
   },
   actionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: 20,
+    gap: 16,
     justifyContent: 'space-between',
   },
   actionButton: {
-    width: (width - 32 - 12) / 2,
+    width: (width - 40 - 16) / 2, // 20 padding * 2 = 40, 16 gap
     borderRadius: 24,
-    padding: 16,
+    padding: 15,
     alignItems: 'center',
     ...SlotBShadows.card,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   actionText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
 
@@ -600,6 +682,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: '#000',
     ...SlotBShadows.card,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   galleryLargeImage: {
     width: '100%',
@@ -611,14 +695,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    padding: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    backgroundColor: 'rgba(73, 72, 72, 0.3)', // Ensure text readability
   },
   galleryLargeTitle: {
     color: '#FFF',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     width: '70%',
     textShadowColor: 'rgba(0,0,0,0.5)',
@@ -626,13 +711,17 @@ const styles = StyleSheet.create({
     textShadowRadius: 10,
   },
   galleryFab: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
 
   // Insights (40vh)
@@ -687,9 +776,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 24,
     overflow: 'hidden',
+    ...SlotBShadows.card,
   },
   qrPreviewInner: {
-    padding: 16,
+    padding: 20,
     borderRadius: 24,
   },
   qrPreviewContent: {
@@ -707,18 +797,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   qrPreviewSub: {
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 12,
+    opacity: 0.8,
   },
   activeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   activeBadgeText: {
     color: '#10B981',
@@ -729,9 +822,9 @@ const styles = StyleSheet.create({
   qrImageMiniContainer: {
     width: 80,
     height: 80,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: '#FFF',
-    padding: 4,
+    padding: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -741,6 +834,6 @@ const styles = StyleSheet.create({
   qrImageMini: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 14,
   },
 });

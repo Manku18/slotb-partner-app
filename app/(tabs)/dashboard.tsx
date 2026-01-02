@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: 20,
-        paddingTop: 31, // Shifted down slightly for better visibility
-        paddingBottom: 11,
+        paddingTop: 29, // Shifted down slightly for better visibility
+        paddingBottom: 8,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
     },
     scrollContent: {
+        paddingTop: 8,
         padding: 20,
         paddingBottom: 100,
     },

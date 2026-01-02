@@ -115,7 +115,7 @@ export const useAppStore = create<AppState>((set) => ({
   setReviews: (reviews_data) => set({ reviews_data }),
 
   // Notifications (Mock initial count)
-  notifications: 3,
+  notifications: 0,
   setNotifications: (count) => set({ notifications: count }),
 
   // Tokens (Mock Data)
