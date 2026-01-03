@@ -22,7 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ProfileScreen() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { user, setAuthenticated } = useAppStore();
+    const { user, setAuthenticated, settings, updateSettings } = useAppStore();
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(user?.name || '');
@@ -175,6 +175,46 @@ export default function ProfileScreen() {
                                 </View>
                             )}
                         </View>
+                    </View>
+                </GlassCard>
+
+                {/* Settings Link */}
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>APP SETTINGS</Text>
+                <GlassCard style={styles.card}>
+                    {/* Vibration */}
+                    <View style={styles.row}>
+                        <View style={styles.iconBox}>
+                            <Ionicons name="phone-portrait-outline" size={20} color={colors.primary} />
+                        </View>
+                        <View style={[styles.rowText, { marginRight: 8, flex: 1 }]}>
+                            <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>Vibration</Text>
+                            <Text style={[styles.rowValue, { color: colors.textTertiary }]}>On New Booking</Text>
+                        </View>
+                        <Switch
+                            value={settings?.vibrateOnBooking ?? true}
+                            onValueChange={(v) => updateSettings({ vibrateOnBooking: v })}
+                            trackColor={{ false: '#767577', true: colors.primary }}
+                            thumbColor={'#f4f3f4'}
+                        />
+                    </View>
+
+                    <View style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.05)', marginLeft: 50 }} />
+
+                    {/* Notifications */}
+                    <View style={styles.row}>
+                        <View style={styles.iconBox}>
+                            <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+                        </View>
+                        <View style={[styles.rowText, { marginRight: 8, flex: 1 }]}>
+                            <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>Alerts</Text>
+                            <Text style={[styles.rowValue, { color: colors.textTertiary }]}>Booking & Shop Alerts</Text>
+                        </View>
+                        <Switch
+                            value={settings?.notifyTokens ?? true}
+                            onValueChange={(v) => updateSettings({ notifyTokens: v })}
+                            trackColor={{ false: '#767577', true: colors.primary }}
+                            thumbColor={'#f4f3f4'}
+                        />
                     </View>
                 </GlassCard>
 

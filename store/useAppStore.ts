@@ -59,6 +59,17 @@ export interface User {
   paymentQr?: string;
 }
 
+
+
+// ... (Other Interfaces kept same, checking imports)
+
+// Add Settings Interface
+export interface AppSettings {
+  vibrateOnBooking: boolean;
+  notifyTokens: boolean;
+  notifyAlerts: boolean;
+}
+
 interface AppState {
   // Auth
   isAuthenticated: boolean;
@@ -68,6 +79,10 @@ interface AppState {
   // Theme
   isDarkMode: boolean;
   toggleTheme: () => void;
+
+  // Settings
+  settings: AppSettings;
+  updateSettings: (settings: Partial<AppSettings>) => void;
 
   // Dashboard Data
   stats: DashboardStats | null;
@@ -79,7 +94,8 @@ interface AppState {
 
   // Notifications
   notifications: number;
-  setNotifications: (count: number) => void;
+  notificationsBreakdown: { bookings: number; alerts: number };
+  setNotifications: (count: number, breakdown?: { bookings: number; alerts: number }) => void;
 
   // Tokens
   tokens: Token[];
@@ -101,8 +117,16 @@ export const useAppStore = create<AppState>((set) => ({
   setAuthenticated: (status, user) => set({ isAuthenticated: status, user: user || null }),
 
   // Theme
-  isDarkMode: false, // Default to Light
+  isDarkMode: false,
   toggleTheme: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+
+  // Settings
+  settings: {
+    vibrateOnBooking: true,
+    notifyTokens: true,
+    notifyAlerts: true,
+  },
+  updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
 
   // Dashboard Data
   stats: null,
@@ -114,12 +138,15 @@ export const useAppStore = create<AppState>((set) => ({
   reviews_data: [],
   setReviews: (reviews_data) => set({ reviews_data }),
 
-  // Notifications (Mock initial count)
+  // Notifications
   notifications: 0,
-  setNotifications: (count) => set({ notifications: count }),
+  notificationsBreakdown: { bookings: 0, alerts: 0 },
+  setNotifications: (count, breakdown) => set({
+    notifications: count,
+    notificationsBreakdown: breakdown || { bookings: 0, alerts: 0 }
+  }),
 
-  // Tokens (Mock Data)
-  // Tokens (Real Data via API)
+  // Tokens
   tokens: [],
   filteredTokens: [],
   tokenFilter: 'all',
@@ -152,4 +179,3 @@ export const useAppStore = create<AppState>((set) => ({
     };
   }),
 }));
-

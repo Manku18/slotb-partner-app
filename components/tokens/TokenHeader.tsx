@@ -17,6 +17,9 @@ interface TokenHeaderProps {
     onFilterChange: (filter: TokenFilter) => void;
     onAddToken: () => void;
     onNotificationPress?: () => void;
+    dateFilter: 'today' | 'tomorrow';
+    onDateFilterChange: (date: 'today' | 'tomorrow') => void;
+    notificationCount?: number;
 }
 
 export function TokenHeader({
@@ -25,6 +28,9 @@ export function TokenHeader({
     onFilterChange,
     onAddToken,
     onNotificationPress,
+    dateFilter,
+    onDateFilterChange,
+    notificationCount = 0
 }: TokenHeaderProps) {
     const { colors, isDarkMode } = useTheme();
 
@@ -37,7 +43,29 @@ export function TokenHeader({
             <View style={[styles.topRow, { borderBottomColor: colors.border }]}>
                 <View>
                     <Text style={[styles.title, { color: colors.textPrimary }]}>Live Bookings</Text>
-                    <Text style={[styles.dateSub, { color: colors.textSecondary }]}>Today's Tokens</Text>
+                    {/* Date Toggle */}
+                    <View style={styles.dateToggleContainer}>
+                        <TouchableOpacity
+                            style={[
+                                styles.dateToggleBtn,
+                                dateFilter === 'today' && styles.dateToggleBtnActive,
+                                dateFilter === 'today' && { backgroundColor: colors.textPrimary }
+                            ]}
+                            onPress={() => onDateFilterChange('today')}
+                        >
+                            <Text style={[styles.dateToggleText, dateFilter === 'today' ? { color: colors.textInverse } : { color: colors.textSecondary }]}>Today</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.dateToggleBtn,
+                                dateFilter === 'tomorrow' && styles.dateToggleBtnActive,
+                                dateFilter === 'tomorrow' && { backgroundColor: colors.textPrimary }
+                            ]}
+                            onPress={() => onDateFilterChange('tomorrow')}
+                        >
+                            <Text style={[styles.dateToggleText, dateFilter === 'tomorrow' ? { color: colors.textInverse } : { color: colors.textSecondary }]}>Tomorrow</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.headerActions}>
@@ -46,8 +74,8 @@ export function TokenHeader({
                         onPress={onNotificationPress}
                     >
                         <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-                        {/* Optional Badge */}
-                        <View style={styles.badge} />
+                        {/* Conditional Badge */}
+                        {notificationCount > 0 && <View style={styles.badge} />}
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -248,4 +276,25 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
+    // Toggle Styles
+    dateToggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 20,
+        padding: 4,
+        marginTop: 4,
+        alignSelf: 'flex-start'
+    },
+    dateToggleBtn: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    dateToggleBtnActive: {
+        // bg color handled inline
+    },
+    dateToggleText: {
+        fontSize: 12,
+        fontWeight: '700',
+    }
 });

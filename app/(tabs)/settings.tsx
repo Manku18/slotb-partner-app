@@ -82,7 +82,7 @@ export default function SettingsScreen() {
         <GlassCard style={styles.sectionCard}>
           <SettingItem icon="wallet-outline" label="Payments & Payouts" onPress={() => router.push('/payment-qr')} />
           <View style={[styles.divider, { backgroundColor: colors.background }]} />
-          <SettingItem icon="notifications-outline" label="Notification Preferences" onPress={() => router.push('/notifications')} />
+          <SettingItem icon="notifications-outline" label="Notification Preferences" onPress={() => router.push('/notification-settings')} />
           <View style={[styles.divider, { backgroundColor: colors.background }]} />
           <SettingItem icon="shield-checkmark-outline" label="Privacy & Security" />
         </GlassCard>

@@ -11,7 +11,9 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+
+    View,
+    Vibration
 } from 'react-native';
 import { DownloadReports } from '../../components/dashboard/DownloadReports';
 import { LeaderboardCard } from '../../components/dashboard/LeaderboardCard';
@@ -27,11 +29,14 @@ import { ShopMediaModal } from '../../components/dashboard/ShopMediaModal';
 
 export default function DashboardScreen() {
     const router = useRouter();
-    const { user, stats, earnings, partners, setStats, setEarnings, setPartners, setTokens, setReviews } = useAppStore();
+    const { user, stats, earnings, partners, notifications, notificationsBreakdown, settings, setStats, setEarnings, setPartners, setTokens, setReviews, setNotifications } = useAppStore();
     const { colors } = useTheme();
     const [refreshing, setRefreshing] = useState(false);
     const [isShopOpen, setShopOpen] = useState(true);
     const [mediaModalVisible, setMediaModalVisible] = useState(false);
+
+    // Vibration Ref
+    const prevTokenIds = React.useRef<string[]>([]);
 
     const refreshDashboard = async () => {
         if (user?.id) {
@@ -43,6 +48,17 @@ export default function DashboardScreen() {
                 setPartners(data.partners);
                 setTokens(data.tokens);
                 setReviews(data.reviews || []);
+                if (data.notificationsCount !== undefined) setNotifications(data.notificationsCount, data.notificationsBreakdown);
+
+                // Vibrate on New Booking
+                if (data.tokens) {
+                    const currentIds = data.tokens.map((t: any) => t.id);
+                    const hasNew = currentIds.some((id: string) => !prevTokenIds.current.includes(id));
+                    if (prevTokenIds.current.length > 0 && hasNew && settings.vibrateOnBooking) {
+                        Vibration.vibrate();
+                    }
+                    prevTokenIds.current = currentIds;
+                }
 
                 // SYNC USER DATA
                 if (data.shop && user) {
@@ -68,6 +84,9 @@ export default function DashboardScreen() {
             const { apiService } = require('@/services/api');
             apiService.getShopStatus(user.id).then(setShopOpen);
             refreshDashboard();
+
+            const interval = setInterval(refreshDashboard, 30000);
+            return () => clearInterval(interval);
         }
     }, [user?.id]);
 
@@ -109,7 +128,9 @@ export default function DashboardScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.actionButton, { backgroundColor: colors.surface }]}>
                         <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-                        <View style={[styles.badge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />
+                        {((settings.notifyTokens ? notificationsBreakdown.bookings : 0) + (settings.notifyAlerts ? notificationsBreakdown.alerts : 0)) > 0 &&
+                            <View style={[styles.badge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />
+                        }
                     </TouchableOpacity>
                 </View>
             </View>

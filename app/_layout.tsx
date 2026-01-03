@@ -70,8 +70,10 @@ const RootLayoutNav = () => {
     <Stack>
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="notifications" options={{ headerShown: false }} />
+      <Stack.Screen name="notifications" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
+      <Stack.Screen name="preferences" options={{ headerShown: false }} />
+      <Stack.Screen name="notification-settings" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       <Stack.Screen name="ranking" options={{ headerShown: false }} />
       <Stack.Screen name="profile" options={{ headerShown: false }} />

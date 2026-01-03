@@ -99,9 +99,17 @@ export default function NotificationsScreen() {
                 time: n.created_at, // You might want to format this
                 read: n.is_read == 1
             }));
-            setNotifications(mapped);
+
+            // Filter
+            const { settings } = useAppStore.getState();
+            const filtered = mapped.filter(n => {
+                if (n.type === 'booking') return settings.notifyTokens;
+                return settings.notifyAlerts;
+            });
+
+            setNotifications(filtered);
             // Update badge count based on unread
-            const unread = mapped.filter(n => !n.read).length;
+            const unread = filtered.filter(n => !n.read).length;
             setBadgeCount(unread);
         } catch (e) {
             console.error(e);
@@ -121,13 +129,14 @@ export default function NotificationsScreen() {
     };
 
     // ... actions (handlePressNotification just updates local state for now)
-    const handlePressNotification = (id: string) => {
+    const handlePressNotification = async (id: string) => {
         const isUnread = notifications.find(n => n.id === id)?.read === false;
         setNotifications(prev =>
             prev.map(n => (n.id === id ? { ...n, read: true } : n))
         );
         if (isUnread) {
             setBadgeCount(Math.max(0, badgeCount - 1));
+            if (user?.id) await apiService.markNotificationRead(user.id, id);
         }
     };
 
@@ -258,6 +267,9 @@ export default function NotificationsScreen() {
                 <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Notifications</Text>
 
                 <View style={styles.headerActions}>
+                    <TouchableOpacity onPress={() => router.push('/notification-settings')} style={{ marginRight: 16 }}>
+                        <Ionicons name="settings-outline" size={24} color={colors.textPrimary} />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={handleMarkAllRead}>
                         <Ionicons name="checkmark-done-outline" size={24} color={colors.textPrimary} />
                     </TouchableOpacity>

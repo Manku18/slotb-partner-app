@@ -27,6 +27,7 @@ export default function TokensScreen() {
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [dateFilter, setDateFilter] = useState<'today' | 'tomorrow'>('today');
 
   // Initialize
   useEffect(() => {
@@ -90,11 +91,12 @@ export default function TokensScreen() {
     setHistoryModalVisible(true);
   };
 
-  const fetchLatestData = async () => {
+  const fetchLatestData = async (dateOverride?: 'today' | 'tomorrow') => {
     if (!user?.id) return;
     try {
       const { apiService } = require('@/services/api');
-      const data = await apiService.getDashboard(); // This fetches fresh tokens
+      const targetDate = dateOverride || dateFilter;
+      const data = await apiService.getDashboard(targetDate); // This fetches fresh tokens
       if (data.tokens) setTokens(sortTokens(data.tokens));
     } catch (e) { console.log(e); }
   };
@@ -129,8 +131,8 @@ export default function TokensScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchLatestData();
-    }, [user?.id])
+      fetchLatestData(dateFilter);
+    }, [user?.id, dateFilter])
   );
 
   // Auto-Intelligence: Smart Reminders
@@ -254,9 +256,9 @@ export default function TokensScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchLatestData();
+    await fetchLatestData(dateFilter);
     setRefreshing(false);
-  }, [user?.id]);
+  }, [user?.id, dateFilter]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -269,6 +271,14 @@ export default function TokensScreen() {
         onNotificationPress={() => {
           router.push('/notifications');
         }}
+        dateFilter={dateFilter}
+        onDateFilterChange={(d) => {
+          setDateFilter(d);
+          // Clear list momentarily to show loading or clear old state
+          setTokens([]);
+          fetchLatestData(d);
+        }}
+        notificationCount={useAppStore(state => state.notifications)}
       />
 
       <FlatList

@@ -15,7 +15,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView
+  SafeAreaView,
+  Vibration
 } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context'; // Removed to match Dashboard behavior
 
@@ -41,13 +42,17 @@ const INSIGHTS_DATA = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, notifications, setStats, setEarnings, setTokens, setPartners, setAuthenticated } = useAppStore();
+  const { user, notifications, notificationsBreakdown, settings, setStats, setEarnings, setTokens, setPartners, setAuthenticated, setNotifications } = useAppStore();
   const { colors } = useTheme();
 
   const [isShopOpen, setShopOpen] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [isSmartMode, setSmartMode] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Dynamic State initialization
+  const [adsData, setAdsData] = useState<any[]>(ADS_DATA);
+  const [galleryData, setGalleryData] = useState<any[]>(GALLERY_DATA);
 
   const [galleryActiveSlide, setGalleryActiveSlide] = useState(0);
 
@@ -56,10 +61,12 @@ export default function HomeScreen() {
   const adsScrollRef = React.useRef<ScrollView>(null);
   const galleryScrollRef = React.useRef<ScrollView>(null);
 
+  // Vibration Ref
+  const prevTokenIds = React.useRef<string[]>([]);
+
   // Handle Deep Link Scroll
   React.useEffect(() => {
     if (scrollTo === 'pricing' && mainScrollRef.current) {
-      // Delay slightly to allow layout
       setTimeout(() => {
         mainScrollRef.current?.scrollToEnd({ animated: true });
       }, 500);
@@ -72,16 +79,47 @@ export default function HomeScreen() {
       if (!user?.id) return;
 
       try {
-        const { apiService } = require('@/services/api'); // Ensure apiService is available
+        const { apiService } = require('@/services/api');
         const data = await apiService.getDashboard();
 
-        // Update Store with Live Data
         setStats(data.stats);
         setEarnings(data.earnings);
         setTokens(data.tokens);
         setPartners(data.partners || []);
+        if (data.notificationsCount !== undefined) setNotifications(data.notificationsCount, data.notificationsBreakdown);
 
-        // SYNC USER DATA
+        // Vibrate on New Booking
+        if (data.tokens) {
+          const currentIds = data.tokens.map((t: any) => t.id);
+          const hasNew = currentIds.some((id: string) => !prevTokenIds.current.includes(id));
+          // Only vibrate if we had previous data (avoid vibrate on init) OR if it's a live update
+          // AND if setting is ON.
+          if (prevTokenIds.current.length > 0 && hasNew && settings.vibrateOnBooking) {
+            Vibration.vibrate();
+          }
+          prevTokenIds.current = currentIds;
+        }
+
+        // NEW: Dynamic Ads & Gallery
+        if (data.app_carousel && data.app_carousel.length > 0) {
+          setAdsData(data.app_carousel.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.title,
+            subtitle: item.subtitle,
+            icon: 'star',
+            image: item.image_url,
+            isDynamic: true
+          })));
+        }
+
+        if (data.app_styles && data.app_styles.length > 0) {
+          setGalleryData(data.app_styles.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.name,
+            image: item.image_url
+          })));
+        }
+
         if (data.shop && user) {
           const updatedUser = {
             ...user,
@@ -96,14 +134,12 @@ export default function HomeScreen() {
         }
       } catch (e) {
         console.error("Dashboard Load Failed", e);
-        // Do NOT fall back to mocks. Keep empty or show error.
       } finally {
         setRefreshing(false);
       }
     }
     loadData();
 
-    // Polling every 30 seconds for live updates
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [user?.id, refreshing]);
@@ -112,27 +148,27 @@ export default function HomeScreen() {
   React.useEffect(() => {
     const interval = setInterval(() => {
       let nextSlide = activeSlide + 1;
-      if (nextSlide >= ADS_DATA.length) nextSlide = 0;
+      if (nextSlide >= adsData.length) nextSlide = 0;
       if (adsScrollRef.current) {
         adsScrollRef.current.scrollTo({ x: nextSlide * width, animated: true });
         setActiveSlide(nextSlide);
       }
     }, 2500);
     return () => clearInterval(interval);
-  }, [activeSlide]);
+  }, [activeSlide, adsData]);
 
   // Auto-scroll for Gallery
   React.useEffect(() => {
     const interval = setInterval(() => {
       let nextSlide = galleryActiveSlide + 1;
-      if (nextSlide >= GALLERY_DATA.length) nextSlide = 0;
+      if (nextSlide >= galleryData.length) nextSlide = 0;
       if (galleryScrollRef.current) {
         galleryScrollRef.current.scrollTo({ x: nextSlide * width, animated: true });
         setGalleryActiveSlide(nextSlide);
       }
     }, 2500);
     return () => clearInterval(interval);
-  }, [galleryActiveSlide]);
+  }, [galleryActiveSlide, galleryData]);
 
   // Effect to fetch initial status
   React.useEffect(() => {
@@ -167,10 +203,12 @@ export default function HomeScreen() {
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.headerActionButton, { backgroundColor: colors.surface }]}>
             <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-            {notifications > 0 && <View style={[styles.headerBadge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />}
+            {((settings.notifyTokens ? notificationsBreakdown.bookings : 0) + (settings.notifyAlerts ? notificationsBreakdown.alerts : 0)) > 0 && (
+              <View style={[styles.headerBadge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />
+            )}
           </TouchableOpacity>
         </View>
-      </View>
+      </View >
 
       <ScrollView
         ref={mainScrollRef}
@@ -193,12 +231,18 @@ export default function HomeScreen() {
             }}
             scrollEventThrottle={16}
           >
-            {ADS_DATA.map((item) => (
+            {adsData.map((item: any) => (
               <GlassCard key={item.id} style={styles.heroCard} variant="default">
                 <View style={styles.heroContent}>
-                  <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
-                    <Ionicons name={item.icon as any} size={32} color={colors.primary} />
-                  </View>
+                  {item.image ? (
+                    <View style={{ marginBottom: 16 }}>
+                      <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
+                    </View>
+                  ) : (
+                    <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
+                      <Ionicons name={item.icon as any} size={32} color={colors.primary} />
+                    </View>
+                  )}
                   <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{item.title}</Text>
                   <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
                   <TouchableOpacity style={[styles.heroButton, { backgroundColor: '#0A1A10' }]}>
@@ -211,7 +255,7 @@ export default function HomeScreen() {
           </ScrollView>
 
           <View style={styles.paginationContainer}>
-            {ADS_DATA.map((_, index) => (
+            {adsData.map((_, index) => (
               <View
                 key={index}
                 style={[
@@ -368,7 +412,7 @@ export default function HomeScreen() {
             }}
             scrollEventThrottle={16}
           >
-            {GALLERY_DATA.map((item) => (
+            {galleryData.map((item: any) => (
               <View key={item.id} style={[styles.galleryLargeCard, { width: width - 40, height: height * 0.20 }]}>
                 <Image source={{ uri: item.image }} style={styles.galleryLargeImage} />
                 <View style={styles.galleryLargeOverlay}>
@@ -382,7 +426,7 @@ export default function HomeScreen() {
           </ScrollView>
           {/* Pagination Dots for Gallery */}
           <View style={[styles.paginationContainer, { marginTop: 10, marginBottom: 0 }]}>
-            {GALLERY_DATA.map((_, index) => (
+            {galleryData.map((_, index) => (
               <View
                 key={index}
                 style={[

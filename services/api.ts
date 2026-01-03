@@ -66,7 +66,7 @@ export const authService = {
 };
 
 export const apiService = {
-  async getDashboard(): Promise<any> {
+  async getDashboard(dateFilter: 'today' | 'tomorrow' = 'today'): Promise<any> {
     const { useAppStore } = require('@/store/useAppStore');
     const shopId = useAppStore.getState().user?.id;
 
@@ -81,7 +81,8 @@ export const apiService = {
     try {
       const response = await api.post(dashboardUrl, {
         action: 'fetch_dashboard_data',
-        shop_id: shopId
+        shop_id: shopId,
+        date_filter: dateFilter
       });
 
       const data = response.data;
@@ -125,19 +126,43 @@ export const apiService = {
           rating: w.rating || 5.0,
           avatar: w.img
         })),
-        tokens: (data.liveBookings || []).map((b: any) => ({
-          id: b.id.toString(),
-          tokenNumber: b.token.toString(),
-          customerName: b.userName,
-          service: b.service,
-          barber: 'Staff',
-          status: b.status === 'served' ? 'completed' : b.status, // Map served -> completed
-          time: 'Today',
-          mobileNumber: b.phone,
-          createdAt: Date.now()
-        })),
-        reviews: data.reviews || [],
-        shop: data.shop
+        tokens: (data.liveBookings || []).map((b: any) => {
+          let timeStr = 'Today';
+          let createdTimestamp = Date.now();
+
+          if (b.created_at) {
+            // Parse MySQL Timestamp (e.g., "2025-01-03 15:30:00")
+            const t = b.created_at.replace(' ', 'T');
+            const date = new Date(t);
+            if (!isNaN(date.getTime())) {
+              createdTimestamp = date.getTime();
+              // Manual Format: hh:mm AM/PM
+              const h = date.getHours();
+              const m = date.getMinutes();
+              const amp = h >= 12 ? 'PM' : 'AM';
+              const hv = h % 12 || 12;
+              const mv = m < 10 ? '0' + m : m;
+              timeStr = `${hv}:${mv} ${amp}`;
+            }
+          }
+
+          return {
+            id: b.id.toString(),
+            tokenNumber: b.token.toString(),
+            customerName: b.userName,
+            service: b.service,
+            barber: 'Staff',
+            status: b.status === 'served' ? 'completed' : b.status,
+            time: timeStr,
+            mobileNumber: b.phone,
+            createdAt: createdTimestamp
+          };
+        }),
+        shop: data.shop,
+        app_carousel: data.app_carousel || [],
+        app_styles: data.app_styles || [],
+        notificationsCount: data.unread_notifications_count || 0,
+        notificationsBreakdown: data.unread_breakdown || { bookings: 0, alerts: 0 }
       };
 
     } catch (e) {
@@ -183,6 +208,18 @@ export const apiService = {
       });
       return response.data.notifications || [];
     } catch (e) { return []; }
+  },
+
+  async markNotificationRead(shopId: string, notificationId: string): Promise<boolean> {
+    const dashboardUrl = API_BASE_URL.replace('shop_api.php', 'api_dashboard.php');
+    try {
+      await api.post(dashboardUrl, {
+        action: 'mark_read',
+        shop_id: shopId,
+        notification_id: notificationId
+      });
+      return true;
+    } catch (e) { return false; }
   },
 
   async markAllNotificationsRead(shopId: string): Promise<boolean> {
