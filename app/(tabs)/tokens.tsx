@@ -14,9 +14,15 @@ import {
   Platform,
   RefreshControl,
   StyleSheet,
-  ToastAndroid
+  ToastAndroid,
+  UIManager,
+  LayoutAnimation
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function TokensScreen() {
   const router = useRouter();
@@ -56,6 +62,9 @@ export default function TokensScreen() {
   }, [tokens]);
 
   const handleUpdateStatus = async (id: string, status: Token['status']) => {
+    // 0. Animate Change
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     // 1. Optimistic Update
     const updated = tokens.map(t => {
       if (t.id === id) {
@@ -283,7 +292,9 @@ export default function TokensScreen() {
 
       <FlatList
         data={filteredList}
-        keyExtractor={(item) => item.id}
+        // KEY FIX: Include status in key to force remount on status change.
+        // This prevents Swipeable from getting stuck in 'open' state (blank content) when item reorders/changes type.
+        keyExtractor={(item) => `${item.id}-${item.status}`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
         }

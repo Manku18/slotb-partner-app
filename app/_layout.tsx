@@ -3,7 +3,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native'; // Added AppState
 import 'react-native-reanimated';
 
 import { SlotBColors } from '@/constants/theme';
@@ -43,19 +43,32 @@ const RootLayoutNav = () => {
   }, [isAuthenticated, segments]);
 
   useEffect(() => {
-    // Run once for immersive mode - simplified for stability
+    // Run for immersive mode and ensure it stays hidden on resume
     if (Platform.OS === 'android') {
       const setupNav = async () => {
         try {
           await NavigationBar.setPositionAsync('absolute');
-          await NavigationBar.setBackgroundColorAsync('#ffffff00'); // Transparent
-          await NavigationBar.setBehaviorAsync('overlay-swipe'); // Swipe up to show, auto-hide
+          await NavigationBar.setBackgroundColorAsync('#ffffff00');
+          // Use 'overlay-swipe' to let content draw under bar, but keep it hidden usually
+          await NavigationBar.setBehaviorAsync('overlay-swipe');
           await NavigationBar.setVisibilityAsync('hidden');
         } catch (e) {
           // Ignore
         }
       };
+
       setupNav();
+
+      const subscription = AppState.addEventListener('change', (nextAppState) => {
+        if (nextAppState === 'active') {
+          // Re-apply when coming back to foreground
+          setupNav();
+        }
+      });
+
+      return () => {
+        subscription.remove();
+      };
     }
   }, []);
 
