@@ -82,65 +82,98 @@ export default function HomeScreen() {
         const { apiService } = require('@/services/api');
         const data = await apiService.getDashboard();
 
-        setStats(data.stats);
-        setEarnings(data.earnings);
-        setTokens(data.tokens);
-        setPartners(data.partners || []);
-        if (data.notificationsCount !== undefined) setNotifications(data.notificationsCount, data.notificationsBreakdown);
+        // Safely update stats with fallback
+        if (data?.stats) setStats(data.stats);
+        if (data?.earnings) setEarnings(data.earnings);
+        if (data?.tokens) setTokens(data.tokens);
+        if (data?.partners) setPartners(data.partners || []);
+        if (data?.notificationsCount !== undefined) {
+          setNotifications(data.notificationsCount, data.notificationsBreakdown || { bookings: 0, alerts: 0 });
+        }
 
         // Vibrate on New Booking
-        if (data.tokens) {
-          const currentIds = data.tokens.map((t: any) => t.id);
+        if (data?.tokens && Array.isArray(data.tokens)) {
+          const currentIds = data.tokens.map((t: any) => t.id).filter(Boolean);
           const hasNew = currentIds.some((id: string) => !prevTokenIds.current.includes(id));
           // Only vibrate if we had previous data (avoid vibrate on init) OR if it's a live update
           // AND if setting is ON.
-          if (prevTokenIds.current.length > 0 && hasNew && settings.vibrateOnBooking) {
-            Vibration.vibrate();
+          if (prevTokenIds.current.length > 0 && hasNew && settings?.vibrateOnBooking) {
+            try {
+              Vibration.vibrate();
+            } catch (e) {
+              // Vibration might not be available
+            }
           }
           prevTokenIds.current = currentIds;
         }
 
-        // NEW: Dynamic Ads & Gallery
-        if (data.app_carousel && data.app_carousel.length > 0) {
-          setAdsData(data.app_carousel.map((item: any) => ({
-            id: item.id.toString(),
-            title: item.title,
-            subtitle: item.subtitle,
-            icon: 'star',
-            image: item.image_url,
-            isDynamic: true
-          })));
+        // NEW: Dynamic Ads & Gallery with validation
+        if (data?.app_carousel && Array.isArray(data.app_carousel) && data.app_carousel.length > 0) {
+          try {
+            setAdsData(data.app_carousel.map((item: any) => ({
+              id: item.id?.toString() || Math.random().toString(),
+              title: item.title || 'New Feature',
+              subtitle: item.subtitle || '',
+              icon: 'star',
+              image: item.image_url,
+              isDynamic: true
+            })));
+          } catch (e) {
+            // Keep default ads
+          }
         }
 
-        if (data.app_styles && data.app_styles.length > 0) {
-          setGalleryData(data.app_styles.map((item: any) => ({
-            id: item.id.toString(),
-            title: item.name,
-            image: item.image_url
-          })));
+        if (data?.app_styles && Array.isArray(data.app_styles) && data.app_styles.length > 0) {
+          try {
+            setGalleryData(data.app_styles.map((item: any) => ({
+              id: item.id?.toString() || Math.random().toString(),
+              title: item.name || 'Style',
+              image: item.image_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=500&q=80'
+            })));
+          } catch (e) {
+            // Keep default gallery
+          }
         }
 
-        if (data.shop && user) {
-          const updatedUser = {
-            ...user,
-            shopName: data.shop.name || user.shopName,
-            upiId: data.shop.upi_id || user.upiId,
-            paymentQr: data.shop.payment_qr || user.paymentQr,
-            qrCode: data.shop.qr_code || user.qrCode,
-            image: data.shop.profileImage || user.image,
-            avatar: data.shop.profileImage || user.avatar
-          };
-          setAuthenticated(true, updatedUser);
+        if (data?.shop && user) {
+          try {
+            const updatedUser = {
+              ...user,
+              shopName: data.shop.name || user.shopName,
+              upiId: data.shop.upi_id || user.upiId,
+              paymentQr: data.shop.payment_qr || user.paymentQr,
+              qrCode: data.shop.qr_code || user.qrCode,
+              image: data.shop.profileImage || user.image,
+              avatar: data.shop.profileImage || user.avatar
+            };
+            setAuthenticated(true, updatedUser);
+          } catch (e) {
+            // Keep existing user data
+          }
         }
-      } catch (e) {
-        console.error("Dashboard Load Failed", e);
+      } catch (e: any) {
+        console.error("Dashboard Load Failed:", e?.message || e);
+        // Don't crash - just skip this update
       } finally {
         setRefreshing(false);
       }
     }
-    loadData();
 
-    const interval = setInterval(loadData, 30000);
+    // Wrap in try-catch to prevent any uncaught errors
+    try {
+      loadData();
+    } catch (e) {
+      console.error("LoadData initialization failed:", e);
+      setRefreshing(false);
+    }
+
+    const interval = setInterval(() => {
+      try {
+        loadData();
+      } catch (e) {
+        console.error("Interval loadData failed:", e);
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, [user?.id, refreshing]);
 

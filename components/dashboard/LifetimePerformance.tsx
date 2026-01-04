@@ -154,7 +154,7 @@ export function LifetimePerformance() {
                 >
                     <View>
                         <Text style={[styles.earningsLabel, { color: '#064E3B' }]}>{DASHBOARD_TEXT.lifetime.earnings}</Text>
-                        <Text style={[styles.earningsValue, { color: '#059669' }]}>₹{lifetimeData.earnings.toLocaleString()}</Text>
+                        <Text style={[styles.earningsValue, { color: '#059669' }]}>₹{(lifetimeData.earnings || 0).toLocaleString()}</Text>
                     </View>
                     <View style={styles.tapIndicator}>
                         <Text style={{ fontSize: 10, color: '#064E3B', fontWeight: '600' }}>TAP FOR INFO</Text>
@@ -228,7 +228,7 @@ export function LifetimePerformance() {
                                 }]}>
                                     {activeMetric === 'served' ? lifetimeData.customers :
                                         activeMetric === 'missed' ? lifetimeData.missed :
-                                            `₹${(lifetimeData.earnings / 100000).toFixed(2)}L`}
+                                            `₹${((lifetimeData.earnings || 0) / 100000).toFixed(2)}L`}
                                 </Text>
                             </View>
 

@@ -39,42 +39,59 @@ export default function DashboardScreen() {
     const prevTokenIds = React.useRef<string[]>([]);
 
     const refreshDashboard = async () => {
-        if (user?.id) {
+        if (!user?.id) return;
+
+        try {
             const { apiService } = require('@/services/api');
             const data = await apiService.getDashboard();
+
             if (data) {
-                setStats(data.stats);
-                setEarnings(data.earnings);
-                setPartners(data.partners);
-                setTokens(data.tokens);
-                setReviews(data.reviews || []);
-                if (data.notificationsCount !== undefined) setNotifications(data.notificationsCount, data.notificationsBreakdown);
+                // Safely update with optional chaining
+                if (data?.stats) setStats(data.stats);
+                if (data?.earnings) setEarnings(data.earnings);
+                if (data?.partners) setPartners(data.partners);
+                if (data?.tokens) setTokens(data.tokens);
+                if (data?.reviews) setReviews(data.reviews);
+                if (data?.notificationsCount !== undefined) {
+                    setNotifications(data.notificationsCount, data.notificationsBreakdown || { bookings: 0, alerts: 0 });
+                }
 
                 // Vibrate on New Booking
-                if (data.tokens) {
-                    const currentIds = data.tokens.map((t: any) => t.id);
+                if (data?.tokens && Array.isArray(data.tokens)) {
+                    const currentIds = data.tokens.map((t: any) => t.id).filter(Boolean);
                     const hasNew = currentIds.some((id: string) => !prevTokenIds.current.includes(id));
-                    if (prevTokenIds.current.length > 0 && hasNew && settings.vibrateOnBooking) {
-                        Vibration.vibrate();
+                    if (prevTokenIds.current.length > 0 && hasNew && settings?.vibrateOnBooking) {
+                        try {
+                            Vibration.vibrate();
+                        } catch (e) {
+                            // Vibration might not be available
+                        }
                     }
                     prevTokenIds.current = currentIds;
                 }
 
                 // SYNC USER DATA
-                if (data.shop && user) {
-                    const { setAuthenticated } = useAppStore.getState();
-                    const updatedUser = {
-                        ...user,
-                        shopName: data.shop.name || user.shopName,
-                        upiId: data.shop.upi_id || user.upiId,
-                        paymentQr: data.shop.payment_qr || user.paymentQr,
-                        qrCode: data.shop.qr_code || user.qrCode,
-                        image: data.shop.profileImage || user.image,
-                        avatar: data.shop.profileImage || user.avatar
-                    };
-                    setAuthenticated(true, updatedUser);
+                if (data?.shop && user) {
+                    try {
+                        const { setAuthenticated } = useAppStore.getState();
+                        const updatedUser = {
+                            ...user,
+                            shopName: data.shop.name || user.shopName,
+                            upiId: data.shop.upi_id || user.upiId,
+                            paymentQr: data.shop.payment_qr || user.paymentQr,
+                            qrCode: data.shop.qr_code || user.qrCode,
+                            image: data.shop.profileImage || user.image,
+                            avatar: data.shop.profileImage || user.avatar
+                        };
+                        setAuthenticated(true, updatedUser);
+                    } catch (e) {
+                        // Keep existing user data
+                    }
                 }
             }
+        } catch (e: any) {
+            console.error("Dashboard refresh failed:", e?.message || e);
+            // Don't crash - just skip this update
         }
     };
 

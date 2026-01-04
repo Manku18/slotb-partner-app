@@ -67,26 +67,36 @@ export function UnifiedBusinessInsights({ stats, earnings }: UnifiedBusinessInsi
         }).start(() => setModalVisible(false));
     };
 
-    // Extract Real Data
+    // Extract Real Data with proper validation
     const history = stats?.history || { days: [], bookings: [], earnings: [], missed: [] };
     const breakdown = stats?.breakdown || { online: 0, offline: 0, cancelled: 0, noshow: 0, topServices: [] };
 
-    // Construct History Array for Charts
-    const historyData = history.days.map((day: string, i: number) => ({
-        day,
-        bookings: history.bookings[i] || 0,
-        earnings: history.earnings[i] || 0,
-        missed: history.missed[i] || 0
-    })).reverse(); // API sends latest first or last? Loop was 6 downto 0, so 6 days ago first. Actually loop was `for ($i = 6; $i >= 0; $i--)`, so $i=6 is 6 days ago. The array order is [6daysAgo, ..., Today]. So no reverse needed if pushed in order. 
-    // Wait, PHP: `for ($i = 6; $i >= 0; $i--) { $history['days'][] = ... }`. 
-    // $i=6 (6 days ago) -> index 0. $i=0 (today) -> index 6. 
-    // So array is Chronological [Past -> Today]. 
-    // Frontend often wants [Past -> Today] for graph left-to-right.
-    // No reverse needed.
+    // Construct History Array for Charts with safety checks
+    const historyData = Array.isArray(history.days) && history.days.length > 0
+        ? history.days.map((day: string, i: number) => ({
+            day,
+            bookings: history.bookings?.[i] || 0,
+            earnings: history.earnings?.[i] || 0,
+            missed: history.missed?.[i] || 0
+        }))
+        : [];
 
     const renderHistoryGraph = (metric: MetricType) => {
-        // Find max for scaling
-        const maxVal = Math.max(...historyData.map((d: any) => d[metric]), 1);
+        // Safety check for empty data
+        if (!historyData || historyData.length === 0) {
+            return (
+                <View>
+                    <Text style={[styles.historyTitle, { color: colors.textPrimary }]}>Past 7 Days Trend</Text>
+                    <Text style={[styles.historyLabel, { color: colors.textSecondary, textAlign: 'center', paddingVertical: 20 }]}>
+                        No historical data available yet
+                    </Text>
+                </View>
+            );
+        }
+
+        // Find max for scaling - with fallback
+        const values = historyData.map((d: any) => d[metric] || 0).filter((v: number) => typeof v === 'number');
+        const maxVal = values.length > 0 ? Math.max(...values, 1) : 1;
 
         return (
             <View>
@@ -96,14 +106,14 @@ export function UnifiedBusinessInsights({ stats, earnings }: UnifiedBusinessInsi
                         <View key={index} style={styles.historyCard}>
                             <Text style={[styles.historyLabel, { color: colors.textSecondary }]}>{item.day}</Text>
                             <View style={{
-                                height: Math.max((item[metric] / maxVal) * 50, 4), // Scale height, min 4
+                                height: Math.max(((item[metric] || 0) / maxVal) * 50, 4), // Scale height, min 4
                                 width: 6,
                                 backgroundColor: metric === 'missed' ? '#EF4444' : (metric === 'earnings' ? '#10B981' : colors.primary),
                                 borderRadius: 3,
                                 marginVertical: 4
                             }} />
                             <Text style={[styles.historyValue, { color: colors.textPrimary }]}>
-                                {metric === 'earnings' ? (item[metric] >= 1000 ? (item[metric] / 1000).toFixed(1) + 'k' : item[metric]) : item[metric]}
+                                {metric === 'earnings' ? ((item[metric] || 0) >= 1000 ? ((item[metric] || 0) / 1000).toFixed(1) + 'k' : (item[metric] || 0)) : (item[metric] || 0)}
                             </Text>
                         </View>
                     ))}
@@ -278,7 +288,7 @@ export function UnifiedBusinessInsights({ stats, earnings }: UnifiedBusinessInsi
                     </View>
                     <View>
                         <Text style={[styles.metricLabel, { color: '#065F46' }]}>Revenue</Text>
-                        <Text style={[styles.metricValue, { color: '#064E3B' }]}>₹{(data.earnings / 1000).toFixed(1)}k</Text>
+                        <Text style={[styles.metricValue, { color: '#064E3B' }]}>₹{((data.earnings || 0) / 1000).toFixed(1)}k</Text>
                     </View>
                     <View style={styles.tapIndicator}>
                         <Ionicons name="chevron-forward" size={14} color="#059669" />

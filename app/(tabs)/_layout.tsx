@@ -70,6 +70,14 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Hide non-screen files */}
+      <Tabs.Screen
+        name="dashboard.constants"
+        options={{
+          href: null, // This hides it from the tab bar
+        }}
+      />
     </Tabs>
   );
 }
