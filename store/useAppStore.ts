@@ -112,87 +112,72 @@ interface AppState {
   setReviews: (reviews: any[]) => void;
 }
 
-export const useAppStore = create<AppState>()(
-  persist(
-    (set) => ({
-      // Auth
-      isAuthenticated: false,
-      user: null,
-      setAuthenticated: (status, user) => set({ isAuthenticated: status, user: user || null }),
+export const useAppStore = create<AppState>((set) => ({
+  // Auth
+  isAuthenticated: false,
+  user: null,
+  setAuthenticated: (status, user) => set({ isAuthenticated: status, user: user || null }),
 
-      // Theme
-      isDarkMode: false,
-      toggleTheme: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+  // Theme
+  isDarkMode: false,
+  toggleTheme: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
-      // Settings
-      settings: {
-        vibrateOnBooking: true,
-        notifyTokens: true,
-        notifyAlerts: true,
-      },
-      updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+  // Settings
+  settings: {
+    vibrateOnBooking: true,
+    notifyTokens: true,
+    notifyAlerts: true,
+  },
+  updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
 
-      // Dashboard Data
-      stats: null,
-      earnings: null,
-      partners: [],
-      setStats: (stats) => set({ stats }),
-      setEarnings: (earnings) => set({ earnings }),
-      setPartners: (partners) => set({ partners }),
-      reviews_data: [],
-      setReviews: (reviews_data) => set({ reviews_data }),
+  // Dashboard Data
+  stats: null,
+  earnings: null,
+  partners: [],
+  setStats: (stats) => set({ stats }),
+  setEarnings: (earnings) => set({ earnings }),
+  setPartners: (partners) => set({ partners }),
+  reviews_data: [],
+  setReviews: (reviews_data) => set({ reviews_data }),
 
-      // Notifications
-      notifications: 0,
-      notificationsBreakdown: { bookings: 0, alerts: 0 },
-      setNotifications: (count, breakdown) => set({
-        notifications: count,
-        notificationsBreakdown: breakdown || { bookings: 0, alerts: 0 }
-      }),
+  // Notifications
+  notifications: 0,
+  notificationsBreakdown: { bookings: 0, alerts: 0 },
+  setNotifications: (count, breakdown) => set({
+    notifications: count,
+    notificationsBreakdown: breakdown || { bookings: 0, alerts: 0 }
+  }),
 
-      // Tokens
-      tokens: [],
-      filteredTokens: [],
-      tokenFilter: 'all',
+  // Tokens
+  tokens: [],
+  filteredTokens: [],
+  tokenFilter: 'all',
 
-      setTokens: (tokens) => set({ tokens, filteredTokens: tokens }),
+  setTokens: (tokens) => set({ tokens, filteredTokens: tokens }),
 
-      setTokenFilter: (filter) => set((state) => {
-        if (filter === 'all') {
-          return { tokenFilter: filter, filteredTokens: state.tokens };
-        }
-        return {
-          tokenFilter: filter,
-          filteredTokens: state.tokens.filter(t => t.status === filter)
-        };
-      }),
-
-      addToken: (token) => set((state) => {
-        const newTokens = [token, ...state.tokens];
-        return {
-          tokens: newTokens,
-          filteredTokens: state.tokenFilter === 'all' ? newTokens : newTokens.filter(t => t.status === state.tokenFilter)
-        };
-      }),
-
-      updateTokenStatus: (id, status) => set((state) => {
-        const newTokens = state.tokens.map(t => t.id === id ? { ...t, status } : t);
-        return {
-          tokens: newTokens,
-          filteredTokens: state.tokenFilter === 'all' ? newTokens : newTokens.filter(t => t.status === state.tokenFilter)
-        };
-      }),
-    }),
-    {
-      name: 'slotb-partner-storage', // Storage key
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        // Only persist authentication and settings
-        isAuthenticated: state.isAuthenticated,
-        user: state.user,
-        isDarkMode: state.isDarkMode,
-        settings: state.settings,
-      }),
+  setTokenFilter: (filter) => set((state) => {
+    if (filter === 'all') {
+      return { tokenFilter: filter, filteredTokens: state.tokens };
     }
-  )
-);
+    return {
+      tokenFilter: filter,
+      filteredTokens: state.tokens.filter(t => t.status === filter)
+    };
+  }),
+
+  addToken: (token) => set((state) => {
+    const newTokens = [token, ...state.tokens];
+    return {
+      tokens: newTokens,
+      filteredTokens: state.tokenFilter === 'all' ? newTokens : newTokens.filter(t => t.status === state.tokenFilter)
+    };
+  }),
+
+  updateTokenStatus: (id, status) => set((state) => {
+    const newTokens = state.tokens.map(t => t.id === id ? { ...t, status } : t);
+    return {
+      tokens: newTokens,
+      filteredTokens: state.tokenFilter === 'all' ? newTokens : newTokens.filter(t => t.status === state.tokenFilter)
+    };
+  }),
+}));
