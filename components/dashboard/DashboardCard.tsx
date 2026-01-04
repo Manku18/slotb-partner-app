@@ -9,6 +9,7 @@ interface DashboardCardProps {
     icon?: keyof typeof Ionicons.glyphMap;
     children: ReactNode;
     rightElement?: ReactNode;
+    action?: ReactNode; // Alias for rightElement
     style?: StyleProp<ViewStyle>;
     variant?: 'default' | 'sage' | 'mustard';
 }
@@ -18,6 +19,7 @@ export function DashboardCard({
     icon,
     children,
     rightElement,
+    action,
     style,
     variant = 'default'
 }: DashboardCardProps) {
@@ -34,7 +36,7 @@ export function DashboardCard({
                     )}
                     <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
                 </View>
-                {rightElement && <View>{rightElement}</View>}
+                {(action || rightElement) && <View>{action || rightElement}</View>}
             </View>
             <View style={styles.content}>
                 {children}

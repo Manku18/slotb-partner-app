@@ -6,37 +6,51 @@ import React, { useState } from 'react';
 import {
     Image,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-
     View,
-    Vibration
+    Vibration,
+    SafeAreaView
 } from 'react-native';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 import { DownloadReports } from '../../components/dashboard/DownloadReports';
 import { LeaderboardCard } from '../../components/dashboard/LeaderboardCard';
 import { ServiceManagementCard } from '../../components/dashboard/ServiceManagementCard';
 import { LifetimePerformance } from '../../components/dashboard/LifetimePerformance';
-import { LoyalCustomersCard } from '../../components/dashboard/LoyalCustomersCard';
+import { GrowBusinessSection } from '../../components/dashboard/GrowBusinessSection';
 import { ReviewsCard } from '../../components/dashboard/ReviewsCard';
 import { ShopLeaderboard } from '../../components/dashboard/ShopLeaderboard';
 import { UnifiedBusinessInsights } from '../../components/dashboard/UnifiedBusinessInsights';
 import { ShopMediaModal } from '../../components/dashboard/ShopMediaModal';
+import { SalonManagementTools } from '../../components/dashboard/SalonManagementTools';
+import { ExpenseManager } from '../../components/dashboard/ExpenseManager';
 
 
+
+import { useRanking } from '../../components/ranking/useRanking';
 
 export default function DashboardScreen() {
     const router = useRouter();
     const { user, stats, earnings, partners, notifications, notificationsBreakdown, settings, setStats, setEarnings, setPartners, setTokens, setReviews, setNotifications } = useAppStore();
     const { colors } = useTheme();
+
+    // Ranking Logic Hook
+    const {
+        myRanking,
+        period: rankingPeriod,
+        setPeriod: setRankingPeriod,
+        isEligible: isRankingEligible
+    } = useRanking();
+
     const [refreshing, setRefreshing] = useState(false);
     const [isShopOpen, setShopOpen] = useState(true);
     const [mediaModalVisible, setMediaModalVisible] = useState(false);
 
     // Vibration Ref
     const prevTokenIds = React.useRef<string[]>([]);
+
 
     const refreshDashboard = async () => {
         if (!user?.id) return;
@@ -120,13 +134,13 @@ export default function DashboardScreen() {
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     {/* Avatar / Shop Logo */}
-                    <View style={styles.avatarContainer}>
+                    <TouchableOpacity style={styles.avatarContainer} onPress={() => router.push('/profile')}>
                         <Image
                             source={{ uri: user?.avatar || user?.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.name || 'Partner') }}
                             style={styles.avatarImage}
                         />
                         <View style={styles.onlineBadge} />
-                    </View>
+                    </TouchableOpacity>
 
                     <View style={styles.headerContent}>
                         <Text style={[styles.shopName, { color: colors.textPrimary }]}>{user?.shopName || 'My Salon'}</Text>
@@ -160,16 +174,19 @@ export default function DashboardScreen() {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
                 }
             >
+                {/* 1. Shop Ranking (Top) */}
                 <ShopLeaderboard isOpen={isShopOpen} />
 
+                {/* 2. Lifetime Journey */}
+                <LifetimePerformance />
                 <UnifiedBusinessInsights stats={stats} earnings={earnings} />
 
-                <ServiceManagementCard />
+                {/* 3. Expense Tracker (New) */}
+                <ExpenseManager />
 
-                <LifetimePerformance />
-
+                {/* 4. Shop Media and Reels */}
                 <TouchableOpacity
-                    style={[styles.manageServicesBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    style={[styles.manageServicesBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 16 }]}
                     onPress={() => setMediaModalVisible(true)}
                 >
                     <View style={styles.manageServicesIcon}>
@@ -182,18 +199,23 @@ export default function DashboardScreen() {
                     <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
 
-                <View style={styles.spacer} />
+                {/* 5. Shop Service */}
+                <ServiceManagementCard />
 
-                {/* Loyal Customers - Placeholder until API provides it */}
-                {/* <LoyalCustomersCard customers={[]} /> */}
-
+                {/* 6. Review and Summary (Combined Reviews + Business Insights) */}
                 <ReviewsCard onRefresh={refreshDashboard} />
 
+                {/* 7. Download Report */}
                 <DownloadReports />
 
+                {/* 8. Employee Ranking Section */}
                 <LeaderboardCard employees={partners} onRefresh={refreshDashboard} />
 
-                {/* ServiceManagementModal removed - logic moved to ServiceManagementCard */}
+                {/* 9. Salon Management (Moved Below Employee Ranking) */}
+                <SalonManagementTools />
+
+                {/* 10. Shop Growth (Moved to Bottom) */}
+                <GrowBusinessSection />
 
                 <ShopMediaModal
                     visible={mediaModalVisible}

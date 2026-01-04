@@ -217,13 +217,13 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           {/* Avatar / Shop Logo */}
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity style={styles.avatarContainer} onPress={() => router.push('/profile')}>
             <Image
               source={{ uri: user?.avatar || user?.image || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user?.name || 'Partner') }}
               style={styles.avatarImage}
             />
             <View style={styles.onlineBadge} />
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.headerContent}>
             <Text style={[styles.shopName, { color: colors.textPrimary }]}>{user?.shopName || 'My Salon'}</Text>

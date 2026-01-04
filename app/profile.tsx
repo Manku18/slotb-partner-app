@@ -1,3 +1,4 @@
+import { ServiceManagementCard } from '@/components/dashboard/ServiceManagementCard';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppStore } from '@/store/useAppStore';
@@ -232,6 +233,10 @@ export default function ProfileScreen() {
                         <Ionicons name="checkmark-circle" size={16} color={colors.success} />
                     </View>
                 </GlassCard>
+
+                {/* Shop Service (Editable) */}
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 24 }]}>SHOP SERVICES</Text>
+                <ServiceManagementCard />
 
             </ScrollView>
         </SafeAreaView>

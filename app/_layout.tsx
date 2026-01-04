@@ -47,7 +47,9 @@ const RootLayoutNav = () => {
     if (Platform.OS === 'android') {
       const setupNav = async () => {
         try {
-          await NavigationBar.setBackgroundColorAsync('#ffffff'); // Solid white for safety
+          await NavigationBar.setPositionAsync('absolute');
+          await NavigationBar.setBackgroundColorAsync('#ffffff00'); // Transparent
+          await NavigationBar.setBehaviorAsync('overlay-swipe'); // Swipe up to show, auto-hide
           await NavigationBar.setVisibilityAsync('hidden');
         } catch (e) {
           // Ignore
