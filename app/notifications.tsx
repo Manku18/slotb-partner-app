@@ -90,6 +90,8 @@ export default function NotificationsScreen() {
         if (!user?.id) return;
         try {
             const data = await apiService.getNotifications(user.id);
+            if (!Array.isArray(data)) throw new Error("Invalid format");
+
             // Transform
             const mapped: Notification[] = data.map((n: any) => ({
                 id: n.id.toString(),

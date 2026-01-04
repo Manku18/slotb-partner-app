@@ -21,7 +21,13 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "VIBRATE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -49,7 +55,9 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-image-picker",
+      "expo-location"
     ],
     "experiments": {
       "typedRoutes": true,

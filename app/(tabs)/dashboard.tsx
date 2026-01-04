@@ -25,7 +25,7 @@ import { ShopLeaderboard } from '../../components/dashboard/ShopLeaderboard';
 import { UnifiedBusinessInsights } from '../../components/dashboard/UnifiedBusinessInsights';
 import { ShopMediaModal } from '../../components/dashboard/ShopMediaModal';
 
-// Mock Data for Dashboard (Removed)
+
 
 export default function DashboardScreen() {
     const router = useRouter();
@@ -324,20 +324,6 @@ const styles = StyleSheet.create({
     manageServicesSubtitle: {
         fontSize: 12,
         marginTop: 2,
-    },
-    fab: {
-        position: 'absolute',
-        bottom: 24,
-        right: 20,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 8,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
     }
 });
 
