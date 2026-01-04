@@ -21,8 +21,8 @@ export default function TabLayout() {
           backgroundColor: colors.surfaceHighlight || colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 0,
-          height: (Platform.OS === 'android' ? 62 : 52) + insets.bottom, // Increased by ~10% (55->62)
-          paddingBottom: (Platform.OS === 'android' ? 4 : 0) + insets.bottom,
+          height: (Platform.OS === 'android' ? 62 : 52) + (insets?.bottom || 0), // Increased by ~10% (55->62)
+          paddingBottom: (Platform.OS === 'android' ? 4 : 0) + (insets?.bottom || 0),
           paddingTop: 0,
         },
         tabBarItemStyle: {

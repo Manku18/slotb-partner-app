@@ -62,7 +62,7 @@ export default function DashboardScreen() {
                     const hasNew = currentIds.some((id: string) => !prevTokenIds.current.includes(id));
                     if (prevTokenIds.current.length > 0 && hasNew && settings?.vibrateOnBooking) {
                         try {
-                            Vibration.vibrate();
+                            // Vibration removed for production stability
                         } catch (e) {
                             // Vibration might not be available
                         }
@@ -145,8 +145,9 @@ export default function DashboardScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.actionButton, { backgroundColor: colors.surface }]}>
                         <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
-                        {((settings.notifyTokens ? notificationsBreakdown.bookings : 0) + (settings.notifyAlerts ? notificationsBreakdown.alerts : 0)) > 0 &&
-                            <View style={[styles.badge, { backgroundColor: '#EF4444', borderColor: colors.surface }]} />
+                        {(((settings?.notifyTokens ? (notificationsBreakdown?.bookings || 0) : 0) +
+                            (settings?.notifyAlerts ? (notificationsBreakdown?.alerts || 0) : 0)) > 0) &&
+                            <View style={[styles.badge, { backgroundColor: '#EF4444', borderColor: colors.surface || '#FFF' }]} />
                         }
                     </TouchableOpacity>
                 </View>

@@ -7,10 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "slotbpartnerdemo",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "android": {
       "package": "com.slotb.partner",
-      "versionCode": 1,
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -59,10 +59,6 @@
       "expo-image-picker",
       "expo-location"
     ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
     "extra": {
       "router": {},
       "eas": {

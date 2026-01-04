@@ -48,9 +48,9 @@ export const DASHBOARD_TEXT = {
 
 export const SUGGESTION_COLORS = {
     Good: '#0F172A',
-    Success: 'green',
-    Average: 'orange',
-    Attention: 'red',
+    Success: '#10B981',
+    Average: '#F59E0B',
+    Attention: '#EF4444',
 };
 
 

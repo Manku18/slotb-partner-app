@@ -31,40 +31,31 @@ const RootLayoutNav = () => {
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
 
   useEffect(() => {
+    // Handling redirection safely
     const inAuthGroup = segments[0] === '(tabs)';
     const onLoginPage = segments[0] === 'login';
 
-    const frameId = requestAnimationFrame(() => {
-      try {
-        if (!isAuthenticated) {
-          if (inAuthGroup) {
-            router.replace('/login');
-          }
-        } else {
-          // If authenticated, only redirect AWAY from login page
-          if (onLoginPage) {
-            router.replace('/(tabs)');
-          }
-        }
-      } catch (error) {
-        // Ignored
-      }
-    });
-
-
-    // Immersive Mode for Android
-    if (Platform.OS === 'android') {
-      const enableImmersiveMode = async () => {
-        await NavigationBar.setPositionAsync('absolute');
-        await NavigationBar.setBackgroundColorAsync('#ffffff00'); // Transparent
-        await NavigationBar.setVisibilityAsync('hidden');
-        await NavigationBar.setBehaviorAsync('overlay-swipe'); // Swipe to reveal
-      };
-      enableImmersiveMode();
+    if (!isAuthenticated && inAuthGroup) {
+      router.replace('/login');
+    } else if (isAuthenticated && onLoginPage) {
+      router.replace('/(tabs)');
     }
+  }, [isAuthenticated, segments]);
 
-    return () => cancelAnimationFrame(frameId);
-  }, [isAuthenticated, segments, router]);
+  useEffect(() => {
+    // Run once for immersive mode - simplified for stability
+    if (Platform.OS === 'android') {
+      const setupNav = async () => {
+        try {
+          await NavigationBar.setBackgroundColorAsync('#ffffff'); // Solid white for safety
+          await NavigationBar.setVisibilityAsync('hidden');
+        } catch (e) {
+          // Ignore
+        }
+      };
+      setupNav();
+    }
+  }, []);
 
   return (
     <Stack>
@@ -86,15 +77,18 @@ const RootLayoutNav = () => {
 }
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={customLightTheme}>
-        <RootLayoutNav />
-        {/* Status Bar: Dark content for light background */}
-        <StatusBar style="dark" />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={customLightTheme}>
+          <RootLayoutNav />
+          {/* Status Bar: Dark content for light background */}
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

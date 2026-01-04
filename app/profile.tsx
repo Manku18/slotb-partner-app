@@ -119,7 +119,7 @@ export default function ProfileScreen() {
                 <View style={styles.profileHeader}>
                     <View style={styles.avatarContainer}>
                         <Image
-                            source={{ uri: profileUri || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (name || 'Partner') }}
+                            source={{ uri: profileUri || 'https://ui-avatars.com/api/?background=random&color=fff&name=' + (name || 'Partner') }}
                             style={styles.avatar}
                         />
                         <TouchableOpacity

@@ -63,7 +63,7 @@ export function TodayOverview({ stats, earnings }: TodayOverviewProps) {
                     {DASHBOARD_TEXT.today.suggestionsTitle}
                 </Text>
                 {suggestions.map((s) => (
-                    <View key={s.id} style={[styles.suggestionCard, { backgroundColor: s.color + '15' }]}>
+                    <View key={s.id} style={[styles.suggestionCard, { backgroundColor: s.color.startsWith('#') ? s.color + '15' : 'rgba(0,0,0,0.05)' }]}>
                         <Ionicons name={s.icon as any} size={20} color={s.color} style={{ marginTop: 2 }} />
                         <Text style={[styles.suggestionText, { color: colors.textPrimary }]}>{s.text}</Text>
                     </View>

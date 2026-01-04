@@ -99,7 +99,7 @@ export default function HomeScreen() {
           // AND if setting is ON.
           if (prevTokenIds.current.length > 0 && hasNew && settings?.vibrateOnBooking) {
             try {
-              Vibration.vibrate();
+              // Vibration removed for production stability
             } catch (e) {
               // Vibration might not be available
             }
