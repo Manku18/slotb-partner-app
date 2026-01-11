@@ -16,14 +16,15 @@ import {
     TouchableOpacity,
     View,
     Alert,
-    ActivityIndicator
+    ActivityIndicator,
+    SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { user, setAuthenticated, settings, updateSettings } = useAppStore();
+    const { user, login, authKey, settings, updateSettings } = useAppStore();
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(user?.name || '');
@@ -88,7 +89,7 @@ export default function ProfileScreen() {
                         image: res.image || profileUri || user.image,
                         paymentQr: res.payment_qr || paymentQrUri || user.paymentQr
                     };
-                    setAuthenticated(true, updatedUser);
+                    if (authKey) login(updatedUser, authKey);
                 }
                 Alert.alert('Success ✨', 'Profile and images updated successfully. Changes will reflect on the website immediately.');
             } else {
@@ -102,7 +103,7 @@ export default function ProfileScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
@@ -111,7 +112,12 @@ export default function ProfileScreen() {
                     <Text style={[styles.greeting, { color: colors.textSecondary }]}>Manage Shop</Text>
                     <Text style={[styles.shopName, { color: colors.textPrimary }]}>{shopName || 'Profile'}</Text>
                 </View>
-                {loading && <ActivityIndicator color={colors.primary} />}
+                <View style={[styles.bellContainer]}>
+                    {loading && <ActivityIndicator color={colors.primary} style={{ marginRight: 10 }} />}
+                    <TouchableOpacity onPress={() => router.push('/notifications')} style={[styles.bellButton, { backgroundColor: colors.surface }]}>
+                        <Ionicons name="notifications-outline" size={24} color={colors.textPrimary} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -270,17 +276,29 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 12,
+        paddingTop: 29, // Match Home
+        paddingBottom: 8, // Match Home
         gap: 12,
         zIndex: 10,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48, // Match Home action button size
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    bellContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    bellButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     headerTitles: {
         flex: 1,

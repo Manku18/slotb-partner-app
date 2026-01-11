@@ -4,8 +4,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Share, StyleSheet, Text, TouchableOpacity, View, Clipboard, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions, Share, StyleSheet, Text, TouchableOpacity, View, Clipboard, Alert, Image, SafeAreaView } from 'react-native';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +32,7 @@ export default function PaymentQRScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
@@ -100,7 +100,7 @@ export default function PaymentQRScreen() {
 }
 
 // Ensure Image is imported
-import { Image } from 'react-native';
+// import { Image } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
@@ -111,16 +111,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 12,
+        paddingTop: 29, // Match Home
+        paddingBottom: 8, // Match Home
         gap: 12,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48, // Match Home
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(0,0,0,0.05)',
     },
     headerTitles: {
         flex: 1,
@@ -139,9 +140,9 @@ const styles = StyleSheet.create({
         lineHeight: 26,
     },
     bellButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48, // Match Home
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -154,9 +155,9 @@ const styles = StyleSheet.create({
     qrCard: {
         width: width - 60,
         alignItems: 'center',
-        padding: 30,
+        padding: 24,
         borderRadius: 24,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#FFFBEB', // Light Gold (Match Shop QR)
     },
     upiBadge: {
         backgroundColor: '#000',
@@ -174,51 +175,85 @@ const styles = StyleSheet.create({
     payText: {
         fontSize: 14,
         marginBottom: 2,
+        fontWeight: '600',
+        letterSpacing: 0.5,
     },
     cardShopName: {
         fontSize: 24,
         fontWeight: '800',
         marginBottom: 24,
+        lineHeight: 28,
     },
     qrContainer: {
-        padding: 10,
-        borderWidth: 2,
-        borderColor: '#E5E7EB',
-        borderRadius: 24,
+        padding: 16,
+        backgroundColor: '#FFF',
+        borderRadius: 20,
+        shadowColor: '#B45309', // Gold/Brown shadow
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+        elevation: 4,
         marginBottom: 24,
     },
     qrInner: {
+        borderWidth: 1,
+        borderColor: '#FDE68A', // Gold border
+        padding: 4,
+        borderRadius: 16,
         backgroundColor: '#FFF',
-        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    scanLine: {
-        marginTop: 0,
+    activeBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 16,
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    activeBadgeText: {
+        fontSize: 11,
+        color: '#10B981',
+        fontWeight: '700'
     },
     upiId: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
         letterSpacing: 0.5,
+        backgroundColor: '#FEF3C7', // Highlight bg
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 12,
+        overflow: 'hidden',
     },
     copyButton: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        paddingHorizontal: 24,
-        paddingVertical: 14,
+        paddingHorizontal: 32,
+        paddingVertical: 16,
         borderRadius: 16,
-        marginTop: 30,
-        backgroundColor: '#EFF6FF',
+        marginTop: 40,
+        backgroundColor: '#F59E0B', // Gold/Orange button
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
     },
     copyText: {
         fontWeight: '700',
-        fontSize: 14,
-        color: '#3B82F6',
+        fontSize: 16,
+        color: '#FFF',
     },
     secureText: {
         marginTop: 24,
         color: '#9CA3AF',
         fontSize: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 });

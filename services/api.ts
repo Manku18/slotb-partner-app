@@ -379,5 +379,151 @@ export const apiService = {
       console.error("API POST Error:", e);
       return { ok: false, message: e.message };
     }
+  },
+
+  async getPlans(): Promise<any[]> {
+    // Mock Plan Data (Replace with API call when ready)
+    return [
+      {
+        id: 'free',
+        name: 'Free',
+        price: '₹0',
+        period: '/mo',
+        features: [
+          { text: 'Basic features', included: true },
+          { text: 'Limited clients (50/mo)', included: true },
+          { text: 'Analytics', included: false },
+        ],
+        buttonText: 'Current Plan',
+        recommended: false,
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: '₹499',
+        period: '/mo',
+        features: [
+          { text: 'Advanced tools', included: true },
+          { text: 'Unlimited clients', included: true },
+          { text: 'Priority support', included: true },
+          { text: 'Custom Branding', included: false },
+        ],
+        buttonText: 'Upgrade to Pro',
+        recommended: true,
+      },
+      {
+        id: 'premium',
+        name: 'Premium',
+        price: '₹999',
+        period: '/mo',
+        features: [
+          { text: 'All Pro features', included: true },
+          { text: 'Dedicated account manager', included: true },
+          { text: 'Custom integrations', included: true },
+          { text: '0% Commision', included: true },
+        ],
+        buttonText: 'Get Premium',
+        recommended: false,
+      },
+    ];
+  },
+
+  async updatePlan(planId: string, shopId: string): Promise<boolean> {
+    // Mock API call
+    console.log(`Updating plan to ${planId} for shop ${shopId}`);
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(true), 1000);
+    });
+  },
+
+  async getRanking(shopId: string, period: string, scope: 'global' | 'state' | '15km' | '60km', userLocation?: { lat: number, lon: number, state: string }): Promise<any> {
+    // Use a separate endpoint for ranking to avoid conflict with existing dashboard API
+    const rankingUrl = API_BASE_URL.replace('shop_api.php', 'api_ranking.php');
+    try {
+      const payload: any = {
+        action: 'fetch_ranking',
+        shop_id: shopId,
+        period: period,
+        scope: scope
+      };
+
+      // We still pass frontend location if available, but backend is the source of truth
+      if (userLocation?.lat) payload.latitude = userLocation.lat;
+      if (userLocation?.lon) payload.longitude = userLocation.lon;
+      if (userLocation?.state) payload.state = userLocation.state;
+
+      const response = await api.post(rankingUrl, payload);
+      console.log("Ranking Response:", response.data);
+      return response.data;
+    } catch (e) {
+      console.error("Ranking Fetch Error", e);
+      return { leaderboard: [], myRank: null };
+    }
   }
 };
+
+export class WebSocketService {
+  private url: string;
+  private socket: WebSocket | null = null;
+  private messageHandler: ((data: any) => void) | null = null;
+  private reconnectInterval: NodeJS.Timeout | null = null;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  connect() {
+    try {
+      this.socket = new WebSocket(this.url);
+
+      this.socket.onopen = () => {
+        console.log('WebSocket Connected');
+        if (this.reconnectInterval) {
+          clearInterval(this.reconnectInterval);
+          this.reconnectInterval = null;
+        }
+      };
+
+      this.socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (this.messageHandler) {
+            this.messageHandler(data);
+          }
+        } catch (e) {
+          console.error('WebSocket message parse error:', e);
+        }
+      };
+
+      this.socket.onerror = (e) => {
+        console.log('WebSocket error:', (e as any).message);
+      };
+
+      this.socket.onclose = () => {
+        console.log('WebSocket closed. Reconnecting...');
+        if (!this.reconnectInterval) {
+          this.reconnectInterval = setInterval(() => {
+            this.connect();
+          }, 3000);
+        }
+      };
+    } catch (e) {
+      console.error("WebSocket init error", e);
+    }
+  }
+
+  onMessage(handler: (data: any) => void) {
+    this.messageHandler = handler;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
+    }
+    if (this.reconnectInterval) {
+      clearInterval(this.reconnectInterval);
+      this.reconnectInterval = null;
+    }
+  }
+}

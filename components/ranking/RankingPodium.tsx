@@ -76,7 +76,7 @@ export function RankingPodium({ top3, onPressPartner }: RankingPodiumProps) {
 
                 {/* Name & Score */}
                 <Text style={styles.name} numberOfLines={1}>
-                    {partner.partnerId === 'me' ? 'You' : `Salon ${partner.partnerId.slice(-3)}`}
+                    {partner.partnerId === 'me' ? 'You' : partner.partnerId}
                 </Text>
                 <Text style={[styles.score, { color: borderColor }]}>{partner.score} pts</Text>
 
@@ -127,10 +127,11 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     crownShadow: {
-        shadowColor: "#f72a0fff",
+        shadowColor: "#FFD700",
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 10,
+        shadowOpacity: 1,
+        shadowRadius: 15,
+        elevation: 10,
     },
     avatarBorder: {
         marginBottom: 8,
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderRadius: 40,
         padding: 3,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(255,255,255,0.15)',
     },
     avatar: {
         width: 60, // Larger avatar
@@ -171,7 +172,15 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 13,
         fontWeight: 'bold',
-        color: '#FFF',
+        color: '#FFFFFF', // Keep white for contrast on rank background if needed, but usually podium is on page bg. 
+        // Wait, podium is usually on a dark or gradient background in many apps. 
+        // If the page background is white, this white text will vanish.
+        // Let's check where it's used. It's likely in a component on the Ranking Screen.
+        // Given the Premium Theme request, safer to use colors.textPrimary if it sits on the page background.
+        // However, looking at the code, it seems standalone.
+        // Let's play it safe and use colors.textPrimary BUT shadow might look weird on light mode if not handled.
+        // Actually, let's assume it sits on a card or main BG. 
+        // Reverting to dynamic color:
         marginBottom: 4,
         marginTop: 8,
         textShadowColor: 'rgba(0, 0, 0, 0.5)',

@@ -36,12 +36,13 @@ export default function TokensScreen() {
   const [dateFilter, setDateFilter] = useState<'today' | 'tomorrow'>('today');
 
   // Initialize
-  useEffect(() => {
-    if (tokens.length < 3) {
-      const mocks = generateMockTokens();
-      setTokens(mocks);
-    }
-  }, []);
+  // Initialize - Removed Mock Data Injection
+  // useEffect(() => {
+  //   if (tokens.length < 3) {
+  //     const mocks = generateMockTokens();
+  //     setTokens(mocks);
+  //   }
+  // }, []);
 
   // Filter & Sort
   const filteredList = useMemo(() => {

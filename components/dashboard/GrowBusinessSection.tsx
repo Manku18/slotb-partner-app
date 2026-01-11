@@ -25,9 +25,10 @@ export function GrowBusinessSection() {
                 if (Platform.OS === 'android') {
                     setTimeout(async () => {
                         try {
-                            await NavigationBar.setPositionAsync('absolute');
-                            await NavigationBar.setBackgroundColorAsync('#ffffff00');
-                            await NavigationBar.setBehaviorAsync('overlay-swipe');
+                            // Edge-to-edge is enabled by default in SDK 52+, causing these to warn
+                            // await NavigationBar.setPositionAsync('absolute');
+                            // await NavigationBar.setBackgroundColorAsync('#ffffff00');
+                            // await NavigationBar.setBehaviorAsync('overlay-swipe');
                             await NavigationBar.setVisibilityAsync('hidden');
                         } catch (e) { }
                     }, 500); // Small delay to ensure share sheet is fully gone

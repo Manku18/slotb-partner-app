@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../../components/ui/GlassCard';
 
 export default function SettingsScreen() {
-  const { user, toggleTheme, setAuthenticated } = useAppStore();
+  const { user, toggleTheme, logout } = useAppStore();
   const { colors, isDarkMode } = useTheme(); // Use Theme Hook
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     // Clear user session store
-    setAuthenticated(false, undefined);
+    logout();
     // Navigate back to login
     router.replace('/login');
   };

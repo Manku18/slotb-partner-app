@@ -87,7 +87,7 @@ export default function DashboardScreen() {
                 // SYNC USER DATA
                 if (data?.shop && user) {
                     try {
-                        const { setAuthenticated } = useAppStore.getState();
+                        const { authKey, login } = useAppStore.getState();
                         const updatedUser = {
                             ...user,
                             shopName: data.shop.name || user.shopName,
@@ -97,7 +97,7 @@ export default function DashboardScreen() {
                             image: data.shop.profileImage || user.image,
                             avatar: data.shop.profileImage || user.avatar
                         };
-                        setAuthenticated(true, updatedUser);
+                        if (authKey) login(updatedUser, authKey);
                     } catch (e) {
                         // Keep existing user data
                     }

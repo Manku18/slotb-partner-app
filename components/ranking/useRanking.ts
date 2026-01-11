@@ -7,49 +7,57 @@ import {
     DEFAULT_RANKING_CONFIG,
     PartnerPerformance
 } from './rankingTypes';
-import { calculateRankingScore, simulateLeaderboard } from './rankingUtils';
+import { calculateRankingScore } from './rankingUtils';
 
-export const useRanking = () => {
-    const { user, stats, settings } = useAppStore();
-
+export const useRanking = (scope: 'global' | 'state' | '15km' | '60km' = '15km') => {
+    const { user, stats } = useAppStore();
     const [period, setPeriod] = useState<RankingPeriod>('month');
     const [config, setConfig] = useState<RankingConfig>(DEFAULT_RANKING_CONFIG);
-    const [isEligible, setIsEligible] = useState(true); // Mock eligibility for now
+    const [rankingData, setRankingData] = useState<{ leaderboard: RankingData[], myRank: RankingData | null }>({ leaderboard: [], myRank: null });
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Derive generic performance from Dashboard Stats (Mocking specific period data for now)
-    const currentPerformance: PartnerPerformance = useMemo(() => {
-        // In a real scenario, we'd fetch specific performance for the selected 'period'
-        return {
-            onlineBookings: stats?.onlineBookings || 0,
-            completedBookings: stats?.realServedBookings || 0, // Assuming served = completed
-            averageRating: 4.7, // Mock
-            reviewCount: 12, // Mock
-            cancellations: 1, // Mock
-            noShows: 0 // Mock
-        };
-    }, [stats, period]);
+    const fetchRanking = async () => {
+        if (!user?.id) return;
+        setIsLoading(true);
+        try {
+            // Dynamic require to avoid cycle if any, though likely safe
+            const { apiService } = require('@/services/api');
+            const data = await apiService.getRanking(user.id, period, scope, {
+                // Backend now fetches safe location from DB based on shop_id
+                lat: user.latitude || 0,
+                lon: user.longitude || 0,
+                state: user.state || ''
+            });
 
-    const rankingData = useMemo(() => {
-        if (!user?.id) return null;
+            if (data) {
+                setRankingData({
+                    leaderboard: data.leaderboard || [],
+                    myRank: data.my_rank || null
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load ranking", e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        const leaderboard = simulateLeaderboard(user.id, currentPerformance, config);
-        const myRank = leaderboard.find(p => p.partnerId === user.id);
-
-        return {
-            leaderboard,
-            myRank: myRank || null
-        };
-    }, [user, currentPerformance, config]);
+    useEffect(() => {
+        fetchRanking();
+    }, [user?.id, period, scope]);
 
     return {
         period,
         setPeriod,
         config,
-        setConfig, // Admin function
-        isEligible,
-        currentPerformance,
-        myRanking: rankingData?.myRank,
-        leaderboard: rankingData?.leaderboard,
-        isLoading: false
+        setConfig,
+        isEligible: true, // Create a logic for logic later if needed
+        currentPerformance: rankingData.myRank?.performance || {
+            onlineBookings: 0, completedBookings: 0, averageRating: 0, reviewCount: 0, cancellations: 0, noShows: 0
+        },
+        myRanking: rankingData.myRank,
+        leaderboard: rankingData.leaderboard,
+        isLoading,
+        refetch: fetchRanking
     };
 };

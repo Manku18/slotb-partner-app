@@ -1,6 +1,6 @@
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as NavigationBar from 'expo-navigation-bar';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native'; // Added AppState
@@ -8,6 +8,9 @@ import 'react-native-reanimated';
 
 import { SlotBColors } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
+import { usePushNotifications } from '@/hooks/usePushNotifications'; // Import Hook
+import { useWebSocket } from '@/hooks/useWebSocket';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -28,29 +31,39 @@ const customLightTheme = {
 const RootLayoutNav = () => {
   const segments = useSegments();
   const router = useRouter();
-  const isAuthenticated = useAppStore((state) => state.isAuthenticated);
+  // Ensure navigation is ready
+  const rootNavigationState = useRootNavigationState();
+  const authKey = useAppStore((state) => state.authKey);
+  const isHydrated = useAppStore((state) => state.isHydrated);
+
+  // Initialize Real-time Updates
+  useWebSocket();
 
   useEffect(() => {
-    // Handling redirection safely
-    const inAuthGroup = segments[0] === '(tabs)';
-    const onLoginPage = segments[0] === 'login';
+    // Wait for hydration and navigation ready
+    if (!isHydrated || !rootNavigationState?.key) return;
 
-    if (!isAuthenticated && inAuthGroup) {
-      router.replace('/login');
-    } else if (isAuthenticated && onLoginPage) {
+    // Handling redirection safely
+    const firstSegment = segments[0] as string | undefined;
+    const inAuthGroup = firstSegment === '(tabs)';
+    const onAuthPage = firstSegment === 'login' || firstSegment === 'welcome' || firstSegment === 'signup';
+
+    if (!authKey && inAuthGroup) {
+      router.replace('/welcome');
+    } else if (authKey && onAuthPage) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, segments]);
+  }, [authKey, segments, isHydrated]);
 
   useEffect(() => {
     // Run for immersive mode and ensure it stays hidden on resume
     if (Platform.OS === 'android') {
       const setupNav = async () => {
         try {
-          await NavigationBar.setPositionAsync('absolute');
-          await NavigationBar.setBackgroundColorAsync('#ffffff00');
-          // Use 'overlay-swipe' to let content draw under bar, but keep it hidden usually
-          await NavigationBar.setBehaviorAsync('overlay-swipe');
+          // Edge-to-edge is enabled by default in SDK 52+, causing these to warn
+          // await NavigationBar.setPositionAsync('absolute');
+          // await NavigationBar.setBackgroundColorAsync('#ffffff00');
+          // await NavigationBar.setBehaviorAsync('overlay-swipe');
           await NavigationBar.setVisibilityAsync('hidden');
         } catch (e) {
           // Ignore
@@ -72,9 +85,15 @@ const RootLayoutNav = () => {
     }
   }, []);
 
+  if (!isHydrated) {
+    return <LoadingScreen />;
+  }
+
   return (
     <Stack>
+      <Stack.Screen name="welcome" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="signup" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="notifications" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
@@ -95,6 +114,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
+  const { expoPushToken, notification } = usePushNotifications(); // Init Push Logic
+  // Optionally console log token for debugging or send to backend here if hook doesn't (hook logs it)
+
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>

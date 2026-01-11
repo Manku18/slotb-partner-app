@@ -16,7 +16,9 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
-  Vibration
+  Vibration,
+  Linking,
+  ImageBackground
 } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context'; // Removed to match Dashboard behavior
 
@@ -42,7 +44,7 @@ const INSIGHTS_DATA = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, notifications, notificationsBreakdown, settings, setStats, setEarnings, setTokens, setPartners, setAuthenticated, setNotifications } = useAppStore();
+  const { user, authKey, login, notifications, notificationsBreakdown, settings, setStats, setEarnings, setTokens, setPartners, setNotifications } = useAppStore();
   const { colors } = useTheme();
 
   const [isShopOpen, setShopOpen] = useState(true);
@@ -146,7 +148,7 @@ export default function HomeScreen() {
               image: data.shop.profileImage || user.image,
               avatar: data.shop.profileImage || user.avatar
             };
-            setAuthenticated(true, updatedUser);
+            if (authKey) login(updatedUser, authKey);
           } catch (e) {
             // Keep existing user data
           }
@@ -265,25 +267,59 @@ export default function HomeScreen() {
             scrollEventThrottle={16}
           >
             {adsData.map((item: any) => (
-              <GlassCard key={item.id} style={styles.heroCard} variant="default">
-                <View style={styles.heroContent}>
-                  {item.image ? (
-                    <View style={{ marginBottom: 16 }}>
-                      <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
-                    </View>
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={item.link ? 0.7 : 1}
+                onPress={() => item.link && Linking.openURL(item.link)}
+              >
+                <GlassCard style={[styles.heroCard, { backgroundColor: item.bgImage ? 'transparent' : colors.surface }]} variant="default">
+                  {item.bgImage ? (
+                    <ImageBackground source={{ uri: item.bgImage }} style={styles.heroBackground} resizeMode="cover">
+                      <View style={styles.heroContentOverlay}>
+                        {item.image ? (
+                          <View style={{ marginBottom: 16 }}>
+                            <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
+                          </View>
+                        ) : (
+                          <View style={[styles.adIconContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                            <Ionicons name={item.icon as any} size={32} color="#FFF" />
+                          </View>
+                        )}
+                        <Text style={[styles.heroTitle, { color: '#FFF' }]}>{item.title}</Text>
+                        <Text style={[styles.heroSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>{item.subtitle}</Text>
+                        <TouchableOpacity
+                          style={[styles.heroButton, { backgroundColor: '#FFF' }]}
+                          onPress={() => item.link && Linking.openURL(item.link)}
+                        >
+                          <Text style={[styles.adButtonText, { color: '#000' }]}>EXPLORE NOW</Text>
+                          <Ionicons name="arrow-forward" size={12} color="#000" />
+                        </TouchableOpacity>
+                      </View>
+                    </ImageBackground>
                   ) : (
-                    <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
-                      <Ionicons name={item.icon as any} size={32} color={colors.primary} />
+                    <View style={styles.heroContent}>
+                      {item.image ? (
+                        <View style={{ marginBottom: 16 }}>
+                          <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
+                        </View>
+                      ) : (
+                        <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
+                          <Ionicons name={item.icon as any} size={32} color={colors.primary} />
+                        </View>
+                      )}
+                      <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{item.title}</Text>
+                      <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+                      <TouchableOpacity
+                        style={[styles.heroButton, { backgroundColor: colors.primary }]}
+                        onPress={() => item.link && Linking.openURL(item.link)}
+                      >
+                        <Text style={[styles.adButtonText, { color: colors.surface }]}>EXPLORE NOW</Text>
+                        <Ionicons name="arrow-forward" size={12} color={colors.surface} />
+                      </TouchableOpacity>
                     </View>
                   )}
-                  <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{item.title}</Text>
-                  <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
-                  <TouchableOpacity style={[styles.heroButton, { backgroundColor: '#0A1A10' }]}>
-                    <Text style={styles.adButtonText}>EXPLORE NOW</Text>
-                    <Ionicons name="arrow-forward" size={12} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-              </GlassCard>
+                </GlassCard>
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
@@ -446,15 +482,24 @@ export default function HomeScreen() {
             scrollEventThrottle={16}
           >
             {galleryData.map((item: any) => (
-              <View key={item.id} style={[styles.galleryLargeCard, { width: width - 40, height: height * 0.20 }]}>
-                <Image source={{ uri: item.image }} style={styles.galleryLargeImage} />
-                <View style={styles.galleryLargeOverlay}>
-                  <Text style={styles.galleryLargeTitle}>{item.title}</Text>
-                  <TouchableOpacity style={styles.galleryFab}>
-                    <Ionicons name="arrow-forward" size={20} color="#000" />
-                  </TouchableOpacity>
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.9}
+                onPress={() => item.link && Linking.openURL(item.link)}
+              >
+                <View style={[styles.galleryLargeCard, { width: width - 40, height: height * 0.20 }]}>
+                  <Image source={{ uri: item.image }} style={styles.galleryLargeImage} />
+                  <View style={styles.galleryLargeOverlay}>
+                    <Text style={styles.galleryLargeTitle}>{item.title}</Text>
+                    <TouchableOpacity
+                      style={styles.galleryFab}
+                      onPress={() => item.link && Linking.openURL(item.link)}
+                    >
+                      <Ionicons name="arrow-forward" size={20} color="#000" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
           {/* Pagination Dots for Gallery */}
@@ -622,6 +667,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
+  },
+  heroBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+  },
+  heroContentOverlay: {
+    padding: 24,
+    alignItems: 'flex-start',
+    width: '100%',
+    backgroundColor: 'rgba(0,0,0,0.3)', // Slight dark overlay for readability
+    height: '100%',
+    justifyContent: 'center',
   },
   adButtonText: {
     fontSize: 14,

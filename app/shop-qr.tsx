@@ -4,8 +4,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Share, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions, Share, StyleSheet, Text, TouchableOpacity, View, Image, SafeAreaView } from 'react-native';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -33,7 +33,7 @@ export default function ShopQRScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
@@ -99,20 +99,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 12,
+        paddingTop: 29, // Match Home
+        paddingBottom: 8, // Match Home
         gap: 12,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48, // Match Home
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(0,0,0,0.05)',
     },
     shareButton: {
         padding: 8,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(0,0,0,0.05)',
         borderRadius: 12,
     },
     // Removed duplicate header/backButton styles
@@ -135,9 +136,9 @@ const styles = StyleSheet.create({
         lineHeight: 26,
     },
     bellButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 48, // Match Home
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
     },

@@ -59,6 +59,12 @@ export interface User {
   upiId?: string;
   image?: string;
   paymentQr?: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
 }
 
 
@@ -74,9 +80,14 @@ export interface AppSettings {
 
 interface AppState {
   // Auth
-  isAuthenticated: boolean;
+  authKey: string | null;
   user: User | null;
-  setAuthenticated: (status: boolean, user?: User) => void;
+  login: (user: User, authKey: string) => void;
+  logout: () => void;
+
+  // Hydration
+  isHydrated: boolean;
+  setHydrated: (state: boolean) => void;
 
   // Theme
   isDarkMode: boolean;
@@ -116,9 +127,10 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       // Auth
-      isAuthenticated: false,
+      authKey: null,
       user: null,
-      setAuthenticated: (status, user) => set({ isAuthenticated: status, user: user || null }),
+      login: (user, authKey) => set({ authKey, user }),
+      logout: () => set({ authKey: null, user: null }),
 
       // Theme
       isDarkMode: false,
@@ -141,6 +153,10 @@ export const useAppStore = create<AppState>()(
       setPartners: (partners) => set({ partners }),
       reviews_data: [],
       setReviews: (reviews_data) => set({ reviews_data }),
+
+      // Hydration
+      isHydrated: false,
+      setHydrated: (state) => set({ isHydrated: state }),
 
       // Notifications
       notifications: 0,
@@ -186,8 +202,11 @@ export const useAppStore = create<AppState>()(
     {
       name: 'slotb-partner-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated(true);
+      },
       partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated,
+        authKey: state.authKey,
         user: state.user,
         settings: state.settings,
         isDarkMode: state.isDarkMode
