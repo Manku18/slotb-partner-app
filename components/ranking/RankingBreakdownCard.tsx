@@ -20,14 +20,24 @@ export function RankingBreakdownCard({ rankingData, onPressRules }: RankingBreak
     // Left Tokens are now merged into Cancellations for display
     const totalCancellations = performance.cancellations + performance.noShows;
 
+    // Defensive check: If breakdown is missing (old backend), provide defaults
+    const safeBreakdown = breakdown || {
+        bookingScore: performance.completedBookings * 10,
+        ratingScore: Math.round(performance.averageRating * 1), // Approx
+        penaltyScore: totalCancellations * 5
+    };
+
     return (
-        <View style={[styles.container, { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }]}>
+        <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={[styles.title, { color: '#111827' }]}>Score Breakdown</Text>
+                <View>
+                    <Text style={styles.title}>Score Breakdown</Text>
+                    <Text style={styles.subTitle}>How this score is calculated</Text>
+                </View>
                 {onPressRules && (
-                    <TouchableOpacity onPress={onPressRules}>
-                        <Text style={{ color: '#4F46E5', fontSize: 12, fontWeight: '600' }}>View Rules</Text>
+                    <TouchableOpacity onPress={onPressRules} style={styles.rulesBtn}>
+                        <Text style={styles.rulesText}>View Rules</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -35,30 +45,34 @@ export function RankingBreakdownCard({ rankingData, onPressRules }: RankingBreak
             {/* Rows */}
             <View style={styles.row}>
                 <View style={styles.leftCol}>
-                    <Ionicons name="checkmark-circle" size={18} color="#059669" />
+                    <View style={[styles.iconBox, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+                        <Ionicons name="checkmark-circle" size={18} color="#34D399" />
+                    </View>
                     <View>
-                        <Text style={[styles.label, { color: '#374151' }]}>Completed Bookings</Text>
-                        <Text style={[styles.subLabel, { color: '#6B7280' }]}>
-                            {performance.completedBookings} x 10 pts
+                        <Text style={[styles.label, { color: '#E5E7EB' }]}>Completed Bookings</Text>
+                        <Text style={[styles.subLabel, { color: '#9CA3AF' }]}>
+                            {performance.completedBookings} bookings x 10 pts
                         </Text>
                     </View>
                 </View>
-                <Text style={[styles.value, { color: '#059669' }]}>+{breakdown.bookingScore}</Text>
+                <Text style={[styles.value, { color: '#34D399' }]}>+{safeBreakdown.bookingScore}</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.row}>
                 <View style={styles.leftCol}>
-                    <Ionicons name="star" size={18} color="#D97706" />
+                    <View style={[styles.iconBox, { backgroundColor: 'rgba(251, 191, 36, 0.2)' }]}>
+                        <Ionicons name="star" size={18} color="#FBBF24" />
+                    </View>
                     <View>
-                        <Text style={[styles.label, { color: '#374151' }]}>Rating Bonus</Text>
-                        <Text style={[styles.subLabel, { color: '#6B7280' }]}>
-                            Total Stars x 1 pt
+                        <Text style={[styles.label, { color: '#E5E7EB' }]}>Rating Bonus</Text>
+                        <Text style={[styles.subLabel, { color: '#9CA3AF' }]}>
+                            {performance.averageRating} ★ ({performance.reviewCount} reviews)
                         </Text>
                     </View>
                 </View>
-                <Text style={[styles.value, { color: '#D97706' }]}>+{breakdown.ratingScore}</Text>
+                <Text style={[styles.value, { color: '#FBBF24' }]}>+{safeBreakdown.ratingScore}</Text>
             </View>
 
             <View style={styles.divider} />
@@ -66,15 +80,22 @@ export function RankingBreakdownCard({ rankingData, onPressRules }: RankingBreak
             {/* Merged Cancellation Row */}
             <View style={styles.row}>
                 <View style={styles.leftCol}>
-                    <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                    <View style={[styles.iconBox, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>
+                        <Ionicons name="alert-circle" size={18} color="#F87171" />
+                    </View>
                     <View>
-                        <Text style={[styles.label, { color: '#374151' }]}>Cancellations & Left Tokens</Text>
-                        <Text style={[styles.subLabel, { color: '#6B7280' }]}>
-                            {totalCancellations} x -5 pts
+                        <Text style={[styles.label, { color: '#E5E7EB' }]}>Penalties</Text>
+                        <Text style={[styles.subLabel, { color: '#9CA3AF' }]}>
+                            {performance.cancellations} Cancel / {performance.noShows} No-show
                         </Text>
                     </View>
                 </View>
-                <Text style={[styles.value, { color: '#EF4444' }]}>-{breakdown.penaltyScore}</Text>
+                <Text style={[styles.value, { color: '#F87171' }]}>-{safeBreakdown.penaltyScore}</Text>
+            </View>
+
+            <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total Score</Text>
+                <Text style={styles.totalValue}>{rankingData.score}</Text>
             </View>
         </View>
     );
@@ -82,47 +103,94 @@ export function RankingBreakdownCard({ rankingData, onPressRules }: RankingBreak
 
 const styles = StyleSheet.create({
     container: {
-        borderRadius: 16,
-        padding: 16,
+        borderRadius: 24,
+        padding: 20,
+        backgroundColor: '#1F2937', // Dark gray/slate
         borderWidth: 1,
-        marginBottom: 16,
+        borderColor: 'rgba(255,255,255,0.1)',
+        width: '100%',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     title: {
-        fontSize: 14,
+        fontSize: 18,
         fontWeight: 'bold',
+        color: '#FFF',
+    },
+    subTitle: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        marginTop: 2,
+    },
+    rulesBtn: {
+        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(99, 102, 241, 0.4)',
+    },
+    rulesText: {
+        color: '#818CF8',
+        fontSize: 12,
+        fontWeight: '600'
     },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: 10,
     },
     leftCol: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
     },
+    iconBox: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     label: {
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: '600',
     },
     subLabel: {
         fontSize: 11,
     },
     value: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
     },
     divider: {
         height: 1,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: 'rgba(255,255,255,0.08)',
         marginVertical: 4,
-        marginLeft: 30, // Indent
+        marginLeft: 44,
     },
+    totalRow: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.1)',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    totalLabel: {
+        color: '#D1D5DB',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    totalValue: {
+        color: '#FFD700',
+        fontSize: 20,
+        fontWeight: 'bold',
+    }
 });

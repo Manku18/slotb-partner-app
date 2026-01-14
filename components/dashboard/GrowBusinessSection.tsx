@@ -6,9 +6,14 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { Alert, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { DashboardCard } from './DashboardCard';
 
+import { ComingSoonModal } from '../ui/ComingSoonModal';
+
 export function GrowBusinessSection() {
     const { colors } = useTheme();
     const { user } = useAppStore();
+
+    const [modalVisible, setModalVisible] = React.useState(false);
+    const [modalConfig, setModalConfig] = React.useState({ title: '', message: '', icon: '', gradient: ['#4F46E5', '#818CF8'] });
 
     const handleAction = async (action: string) => {
         if (action === 'Share') {
@@ -21,47 +26,51 @@ export function GrowBusinessSection() {
             } catch (error) {
                 Alert.alert('Error', 'Could not share profile');
             } finally {
-                // RESTORE NAVIGATION BAR STATE (Fix for Android shift issue)
                 if (Platform.OS === 'android') {
                     setTimeout(async () => {
                         try {
-                            // Edge-to-edge is enabled by default in SDK 52+, causing these to warn
-                            // await NavigationBar.setPositionAsync('absolute');
-                            // await NavigationBar.setBackgroundColorAsync('#ffffff00');
-                            // await NavigationBar.setBehaviorAsync('overlay-swipe');
                             await NavigationBar.setVisibilityAsync('hidden');
                         } catch (e) { }
-                    }, 500); // Small delay to ensure share sheet is fully gone
+                    }, 500);
                 }
             }
         } else if (action === 'Boost') {
-            Alert.alert('Boost Visibility', 'Boost packages coming soon! Stay tuned to get featured.');
+            setModalConfig({
+                title: 'Boost Visibility',
+                message: 'Premium boost packages to get you more customers are launching soon!',
+                icon: 'rocket',
+                gradient: ['#F59E0B', '#D97706'] // Amber Gradient
+            });
+            setModalVisible(true);
         } else if (action === 'Apply') {
-            Alert.alert('Get Verified', 'Verification process will be available shortly. Contact support for early access.');
+            setModalConfig({
+                title: 'Get Verified',
+                message: 'Verification process will be available shortly. Contact support for early access.',
+                icon: 'checkmark-circle',
+                gradient: ['#3B82F6', '#2563EB'] // Blue Gradient
+            });
+            setModalVisible(true);
         }
     };
 
     const actions = [
         {
             id: 1,
-            title: 'Boost Visibility',
-            subtitle: 'Get featured on top of search results',
+            title: 'Boost',
             icon: 'rocket-outline',
             color: '#F59E0B', // Amber
             action: 'Boost'
         },
         {
             id: 2,
-            title: 'Get Verified Badge',
-            subtitle: 'Build trust with a verified checkmark',
+            title: 'Verified',
             icon: 'checkmark-circle-outline',
             color: '#3B82F6', // Blue
             action: 'Apply'
         },
         {
             id: 3,
-            title: 'Share Profile',
-            subtitle: 'Share your shop link on social media',
+            title: 'Share',
             icon: 'share-social-outline',
             color: '#10B981', // Emerald
             action: 'Share'
@@ -69,70 +78,69 @@ export function GrowBusinessSection() {
     ];
 
     return (
-        <DashboardCard
-            title="Grow Your Business"
-            icon="trending-up-outline"
-        >
-            <View style={styles.container}>
-                {actions.map((item, index) => (
-                    <View key={item.id} style={[styles.item, index !== actions.length - 1 && { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
-                        <View style={[styles.iconBox, { backgroundColor: item.color + '20' }]}>
-                            <Ionicons name={item.icon as any} size={22} color={item.color} />
-                        </View>
-                        <View style={styles.content}>
-                            <Text style={[styles.title, { color: colors.textPrimary }]}>{item.title}</Text>
-                            <Text style={[styles.subtitle, { color: colors.textTertiary }]}>{item.subtitle}</Text>
-                        </View>
+        <>
+            <DashboardCard
+                title="Grow Your Business"
+                icon="trending-up-outline"
+            >
+                <View style={styles.container}>
+                    {actions.map((item) => (
                         <TouchableOpacity
-                            style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                            key={item.id}
+                            style={[
+                                styles.item,
+                                { backgroundColor: colors.surface, borderColor: colors.border }
+                            ]}
                             onPress={() => handleAction(item.action)}
                         >
-                            <Text style={[styles.actionText, { color: colors.textPrimary }]}>{item.action}</Text>
+                            <View style={[styles.iconBox, { backgroundColor: item.color + '20' }]}>
+                                <Ionicons name={item.icon as any} size={24} color={item.color} />
+                            </View>
+                            <Text style={[styles.title, { color: colors.textPrimary }]}>{item.title}</Text>
                         </TouchableOpacity>
-                    </View>
-                ))}
-            </View>
-        </DashboardCard>
+                    ))}
+                </View>
+            </DashboardCard>
+
+            <ComingSoonModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                icon={modalConfig.icon as any}
+                gradient={modalConfig.gradient as any}
+            />
+        </>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 4,
+        paddingTop: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
     },
     item: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-    },
-    iconBox: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
-    },
-    content: {
-        flex: 1,
-        marginRight: 12,
-    },
-    title: {
-        fontSize: 15,
-        fontWeight: '600',
-        marginBottom: 2,
-    },
-    subtitle: {
-        fontSize: 12,
-    },
-    actionBtn: {
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 20,
+        paddingVertical: 16,
+        paddingHorizontal: 8,
+        borderRadius: 16,
         borderWidth: 1,
     },
-    actionText: {
-        fontSize: 12,
+    iconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    title: {
+        fontSize: 13,
         fontWeight: '600',
+        textAlign: 'center',
     }
 });

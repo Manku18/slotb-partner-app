@@ -1,5 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { RankingData } from './rankingTypes';
@@ -51,7 +51,7 @@ export function RankingPodium({ top3, onPressPartner }: RankingPodiumProps) {
                 {/* Crown for #1 */}
                 {isFirst && (
                     <View style={styles.crownContainer}>
-                        <Ionicons name="sunny" size={28} color="#f72a0fff" style={styles.crownShadow} />
+                        <MaterialCommunityIcons name="crown" size={32} color="#FFD700" style={styles.crownShadow} />
                     </View>
                 )}
 
@@ -75,15 +75,17 @@ export function RankingPodium({ top3, onPressPartner }: RankingPodiumProps) {
                 </View>
 
                 {/* Name & Score */}
-                <Text style={styles.name} numberOfLines={1}>
-                    {partner.partnerId === 'me' ? 'You' : partner.partnerId}
-                </Text>
-                <Text style={[styles.score, { color: borderColor }]}>{partner.score} pts</Text>
+                <View style={{ width: '100%', alignItems: 'center', marginTop: 8, marginBottom: 8, zIndex: 20 }}>
+                    <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+                        {partner.partnerId === 'me' ? 'You' : partner.partnerId}
+                    </Text>
+                    <Text style={[styles.score, { color: borderColor }]}>{partner.score} pts</Text>
+                </View>
 
                 {/* Podium Block */}
                 <LinearGradient
                     colors={podiumColors as [string, string]}
-                    style={[styles.podiumBlock, { height, borderColor }]}
+                    style={[styles.podiumBlock, { height: height, borderColor: borderColor }]}
                 />
             </TouchableOpacity>
         );
@@ -102,105 +104,121 @@ export function RankingPodium({ top3, onPressPartner }: RankingPodiumProps) {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 30, // Increased top margin
-        marginBottom: 20,
+        marginTop: 40,
+        marginBottom: 30,
         alignItems: 'center',
     },
     podiumRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        gap: 12, // Increased gap
+        gap: 16,
     },
     stepContainer: {
         alignItems: 'center',
-        marginBottom: -10,
+        marginBottom: -12,
         zIndex: 1,
-        width: 90,
+        width: 100, // Increased touch target
     },
     emptyStep: {
-        width: 90,
+        width: 100,
     },
     crownContainer: {
         position: 'absolute',
-        top: -32,
-        zIndex: 2,
+        top: -38,
+        zIndex: 10,
     },
     crownShadow: {
-        shadowColor: "#FFD700",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 15,
-        elevation: 10,
+        shadowColor: "#F59E0B",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.8,
+        shadowRadius: 10,
+        elevation: 12,
+        textShadowColor: '#FBBF24',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 12,
     },
     avatarBorder: {
-        marginBottom: 8,
+        marginBottom: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 3,
-        borderRadius: 40,
-        padding: 3,
-        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderWidth: 2,
+        borderRadius: 50,
+        padding: 4,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 6,
     },
     avatar: {
-        width: 60, // Larger avatar
-        height: 60,
-        borderRadius: 30,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         alignItems: 'center',
         justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)',
     },
     avatarText: {
-        fontSize: 22,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontWeight: '800',
     },
     rankBadge: {
         position: 'absolute',
-        bottom: -10,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        bottom: -12,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 2,
         borderColor: '#FFF',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 4,
     },
     rankText: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#FFF',
     },
     name: {
         fontSize: 13,
         fontWeight: 'bold',
-        color: '#FFFFFF', // Keep white for contrast on rank background if needed, but usually podium is on page bg. 
-        // Wait, podium is usually on a dark or gradient background in many apps. 
-        // If the page background is white, this white text will vanish.
-        // Let's check where it's used. It's likely in a component on the Ranking Screen.
-        // Given the Premium Theme request, safer to use colors.textPrimary if it sits on the page background.
-        // However, looking at the code, it seems standalone.
-        // Let's play it safe and use colors.textPrimary BUT shadow might look weird on light mode if not handled.
-        // Actually, let's assume it sits on a card or main BG. 
-        // Reverting to dynamic color:
-        marginBottom: 4,
-        marginTop: 8,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+        color: '#FFFFFF',
+        textAlign: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.8)',
         textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 3,
+        width: '100%',
+        paddingHorizontal: 4,
+        marginTop: 8,
+        marginBottom: 4,
     },
     score: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '800',
-        marginBottom: 8,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+        marginBottom: 10,
+        textAlign: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.8)',
         textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 3,
+        textShadowRadius: 4,
     },
     podiumBlock: {
         width: '100%',
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
         borderTopWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
+        borderLeftWidth: 0.5,
+        borderRightWidth: 0.5,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 8,
     },
 });

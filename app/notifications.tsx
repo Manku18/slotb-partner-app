@@ -121,6 +121,8 @@ export default function NotificationsScreen() {
     useFocusEffect(
         React.useCallback(() => {
             fetchNotifications();
+            const interval = setInterval(fetchNotifications, 15000);
+            return () => clearInterval(interval);
         }, [])
     );
 

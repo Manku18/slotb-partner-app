@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BG_IMAGE = require('@/assets/images/happy_duo_mobile.png');
+const BG_IMAGE = require('@/assets/images/welcome-bg.jpg');
 
 export default function WelcomeScreen() {
     const router = useRouter();
@@ -66,7 +66,7 @@ export default function WelcomeScreen() {
                         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
                     ]}
                 >
-                    {/* Brand Presentation - MOVED TO TOP */}
+                    {/* Brand Presentation - CENTERED in vacant space */}
                     <View style={styles.brandSection}>
                         <Text style={styles.brandText}>SlotB.in</Text>
                         <Text style={styles.tagline}>PARTNER</Text>
@@ -148,7 +148,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.6)', // Slightly lighter to see BG better
+        backgroundColor: 'rgba(0,0,0,0.5)', // Adjusted for new BG visibility
     },
     container: {
         flex: 1,
@@ -156,15 +156,15 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         padding: 24,
-        justifyContent: 'space-between', // Pushes Brand to Top, Actions to Bottom
         paddingBottom: 70, // Space for footer
     },
 
     // Brand
-    // Brand
     brandSection: {
+        flex: 1, // Takes up the available space (Center)
         alignItems: 'center',
-        marginTop: Platform.OS === 'android' ? '20%' : '15%', // Shifted down another 5%
+        justifyContent: 'center', // Centers text vertically in the empty space
+        marginBottom: 20,
     },
     brandText: {
         fontSize: 56, // Larger

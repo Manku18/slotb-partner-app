@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { ComingSoonModal } from '@/components/ui/ComingSoonModal'; // Added Import
 import {
   Dimensions,
   Image,
@@ -20,7 +21,10 @@ import {
   Linking,
   ImageBackground
 } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context'; // Removed to match Dashboard behavior
+
+// ... (Existing Constants remain same)
+
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -51,6 +55,9 @@ export default function HomeScreen() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [isSmartMode, setSmartMode] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [comingSoon, setComingSoon] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ title: '', message: '', icon: '', gradient: ['#4F46E5', '#818CF8'] });
+
 
   // Dynamic State initialization
   const [adsData, setAdsData] = useState<any[]>(ADS_DATA);
@@ -272,41 +279,53 @@ export default function HomeScreen() {
                 activeOpacity={item.link ? 0.7 : 1}
                 onPress={() => item.link && Linking.openURL(item.link)}
               >
-                <GlassCard style={[styles.heroCard, { backgroundColor: item.bgImage ? 'transparent' : colors.surface }]} variant="default">
-                  {item.bgImage ? (
-                    <ImageBackground source={{ uri: item.bgImage }} style={styles.heroBackground} resizeMode="cover">
+                <GlassCard style={[styles.heroCard, { backgroundColor: 'transparent', overflow: 'hidden' }]} variant="default">
+                  {item.media_type === 'video' ? (
+                    <View style={styles.heroBackground}>
+                      {(() => {
+                        const { Video, ResizeMode } = require('expo-av');
+                        return (
+                          <Video
+                            source={{ uri: item.image_url || item.bgImage }}
+                            style={StyleSheet.absoluteFill}
+                            resizeMode={ResizeMode.COVER}
+                            isLooping
+                            shouldPlay
+                            isMuted={true}
+                          />
+                        );
+                      })()}
                       <View style={styles.heroContentOverlay}>
-                        {item.image ? (
-                          <View style={{ marginBottom: 16 }}>
-                            <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
-                          </View>
-                        ) : (
-                          <View style={[styles.adIconContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-                            <Ionicons name={item.icon as any} size={32} color="#FFF" />
-                          </View>
-                        )}
                         <Text style={[styles.heroTitle, { color: '#FFF' }]}>{item.title}</Text>
-                        <Text style={[styles.heroSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>{item.subtitle}</Text>
+                        <Text style={[styles.heroSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>{item.subtitle || ''}</Text>
                         <TouchableOpacity
-                          style={[styles.heroButton, { backgroundColor: '#FFF' }]}
-                          onPress={() => item.link && Linking.openURL(item.link)}
+                          style={[styles.heroButton, { backgroundColor: '#FFF', marginTop: 10 }]}
+                          onPress={() => (item.button_link || item.link) && Linking.openURL(item.button_link || item.link)}
                         >
-                          <Text style={[styles.adButtonText, { color: '#000' }]}>EXPLORE NOW</Text>
+                          <Text style={[styles.adButtonText, { color: '#000' }]}>{item.button_text || 'EXPLORE NOW'}</Text>
+                          <Ionicons name="arrow-forward" size={12} color="#000" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (item.image_url || item.bgImage) ? (
+                    <ImageBackground source={{ uri: item.image_url || item.bgImage }} style={styles.heroBackground} resizeMode="cover">
+                      <View style={styles.heroContentOverlay}>
+                        <Text style={[styles.heroTitle, { color: '#FFF' }]}>{item.title}</Text>
+                        <Text style={[styles.heroSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>{item.subtitle || ''}</Text>
+                        <TouchableOpacity
+                          style={[styles.heroButton, { backgroundColor: '#FFF', marginTop: 10 }]}
+                          onPress={() => (item.button_link || item.link) && Linking.openURL(item.button_link || item.link)}
+                        >
+                          <Text style={[styles.adButtonText, { color: '#000' }]}>{item.button_text || 'EXPLORE NOW'}</Text>
                           <Ionicons name="arrow-forward" size={12} color="#000" />
                         </TouchableOpacity>
                       </View>
                     </ImageBackground>
                   ) : (
                     <View style={styles.heroContent}>
-                      {item.image ? (
-                        <View style={{ marginBottom: 16 }}>
-                          <Image source={{ uri: item.image }} style={{ width: 50, height: 50, borderRadius: 12 }} resizeMode="cover" />
-                        </View>
-                      ) : (
-                        <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
-                          <Ionicons name={item.icon as any} size={32} color={colors.primary} />
-                        </View>
-                      )}
+                      <View style={[styles.adIconContainer, { backgroundColor: colors.background }]}>
+                        <Ionicons name={item.icon || "star" as any} size={32} color={colors.primary} />
+                      </View>
                       <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{item.title}</Text>
                       <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
                       <TouchableOpacity
@@ -492,10 +511,19 @@ export default function HomeScreen() {
                   <View style={styles.galleryLargeOverlay}>
                     <Text style={styles.galleryLargeTitle}>{item.title}</Text>
                     <TouchableOpacity
-                      style={styles.galleryFab}
-                      onPress={() => item.link && Linking.openURL(item.link)}
+                      style={styles.galleryLearnButton}
+                      onPress={() => {
+                        setModalConfig({
+                          title: 'Master Class',
+                          message: `Learn how to master the ${item.title} style. Course module coming soon!`,
+                          icon: 'school',
+                          gradient: ['#06b6d4', '#3b82f6'] // Cyan to Blue
+                        });
+                        setComingSoon(true);
+                      }}
                     >
-                      <Ionicons name="arrow-forward" size={20} color="#000" />
+                      <Text style={styles.galleryLearnText}>Learn More</Text>
+                      <Ionicons name="arrow-forward" size={14} color="#FFF" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -514,12 +542,56 @@ export default function HomeScreen() {
               />
             ))}
           </View>
-        </View >
+        </View>
+
+        {/* Shop Essentials Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>SHOP ESSENTIALS</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
+            {[
+              { id: 1, name: 'Pro Trimmer', price: '₹1,499', img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=200&q=80' },
+              { id: 2, name: 'Shaving Kit', price: '₹999', img: 'https://images.unsplash.com/photo-1512413914633-b5043f4041ea?w=400&q=80' }, // Replaced Chair with Kit
+              { id: 3, name: 'Hair Dryer', price: '₹2,499', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' }
+            ].map((prod) => (
+              <TouchableOpacity
+                key={prod.id}
+                activeOpacity={0.9}
+                style={[styles.productCard, { backgroundColor: colors.surface }]}
+                onPress={() => {
+                  setModalConfig({
+                    title: 'Shop Coming Soon',
+                    message: 'Get premium salon equipment at best prices. Launching next month!',
+                    icon: 'cart',
+                    gradient: ['#F59E0B', '#D97706'] // Amber
+                  });
+                  setComingSoon(true);
+                }}
+              >
+                <Image source={{ uri: prod.img }} style={styles.productImage} />
+                <View style={styles.productContent}>
+                  <Text style={[styles.productName, { color: colors.textPrimary }]}>{prod.name}</Text>
+                  <Text style={styles.productPrice}>{prod.price}</Text>
+                  <View style={styles.comingSoonBadge}>
+                    <Text style={styles.comingSoonText}>Coming Soon</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Partner Insights (Increased height to 50vh) */}
         < PricingSection />
 
       </ScrollView >
+      <ComingSoonModal
+        visible={comingSoon}
+        onClose={() => setComingSoon(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        icon={modalConfig.icon as any}
+        gradient={modalConfig.gradient as any}
+      />
     </SafeAreaView >
   );
 }
@@ -599,7 +671,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-    paddingTop: 10,
+    paddingTop: 5, // Shifted up (was 10)
   },
   section: {
     marginBottom: 14,
@@ -627,15 +699,20 @@ const styles = StyleSheet.create({
     // Match width/height logic but with fixes
     width: width - 40,
     height: height * 0.38,
-    borderRadius: 0, // Super smooth corners (Matches user request for "corner issue" fix)
+    borderRadius: 0,
     justifyContent: 'center',
     padding: 24,
     marginHorizontal: 20,
-    // Dynamic background for contrast safety, but keep light if theme requires
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden', // CRITICAL: Fixes content passing corners
+
+    // Subtle shadow as requested (not divided look)
+    borderWidth: 0,
+    elevation: 3,
+    shadowColor: '#797777ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
   },
   heroContent: {
     alignItems: 'flex-start',
@@ -845,18 +922,23 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10,
   },
-  galleryFab: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFF',
+  galleryLearnButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)', // Glass effect
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    flexDirection: 'row',
+    gap: 6,
+    elevation: 0,
+  },
+  galleryLearnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFF',
   },
 
   // Insights (40vh)
@@ -970,5 +1052,87 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 14,
+  },
+  // NEW STYLES for Grow Skills & Shop
+  skillsGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  skillCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 24,
+    // Soft shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.03)',
+  },
+  skillIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  skillTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  skillSubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    opacity: 0.7,
+  },
+  productCard: {
+    width: 140,
+    borderRadius: 20,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.03)',
+  },
+  productImage: {
+    width: '100%',
+    height: 100,
+    borderRadius: 16,
+    marginBottom: 10,
+    backgroundColor: '#F3F4F6',
+  },
+  productContent: {
+    alignItems: 'flex-start',
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 13,
+    color: '#9CA3AF', // Greyed out
+    textDecorationLine: 'line-through',
+    marginBottom: 6,
+  },
+  comingSoonBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#166534',
   },
 });

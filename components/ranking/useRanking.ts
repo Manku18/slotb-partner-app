@@ -44,6 +44,9 @@ export const useRanking = (scope: 'global' | 'state' | '15km' | '60km' = '15km')
 
     useEffect(() => {
         fetchRanking();
+
+        const interval = setInterval(fetchRanking, 15000); // 15s polling
+        return () => clearInterval(interval);
     }, [user?.id, period, scope]);
 
     return {

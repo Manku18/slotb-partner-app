@@ -23,7 +23,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 
-const BG_IMAGE = require('@/assets/images/happy_duo_mobile.png');
+const BG_IMAGE = require('@/assets/images/welcome-bg.jpg');
 
 export default function SignupScreen() {
     const router = useRouter();
@@ -188,7 +188,7 @@ export default function SignupScreen() {
                                     {renderInput('address', 'Full Address', 'location-outline', false, 'default', true)}
 
                                     <View style={{ flexDirection: 'row', gap: 12 }}>
-                                        <View style={{ flex: 1 }}>{renderInput('district', 'City', 'map-outline')}</View>
+                                        <View style={{ flex: 1 }}>{renderInput('district', 'District', 'map-outline')}</View>
                                         <View style={{ flex: 1 }}>{renderInput('pincode', 'Pincode', 'navigate-outline', false, 'numeric')}</View>
                                     </View>
                                 </View>

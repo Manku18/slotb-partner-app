@@ -40,20 +40,31 @@ const RootLayoutNav = () => {
   useWebSocket();
 
   useEffect(() => {
-    // Wait for hydration and navigation ready
-    if (!isHydrated || !rootNavigationState?.key) return;
+    const checkNavigation = async () => {
+      // 1. Wait for hydration and navigation ready
+      // 2. Ensure the root layout is fully mounted
+      if (!isHydrated || !rootNavigationState?.key) return;
 
-    // Handling redirection safely
-    const firstSegment = segments[0] as string | undefined;
-    const inAuthGroup = firstSegment === '(tabs)';
-    const onAuthPage = firstSegment === 'login' || firstSegment === 'welcome' || firstSegment === 'signup';
+      // Handling redirection safely
+      const firstSegment = segments[0] as string | undefined;
+      const inAuthGroup = firstSegment === '(tabs)';
+      const onAuthPage = firstSegment === 'login' || firstSegment === 'welcome' || firstSegment === 'signup';
 
-    if (!authKey && inAuthGroup) {
-      router.replace('/welcome');
-    } else if (authKey && onAuthPage) {
-      router.replace('/(tabs)');
-    }
-  }, [authKey, segments, isHydrated]);
+      if (!authKey && inAuthGroup) {
+        // Use setImmediate or setTimeout to ensure navigation happens after render commit
+        setTimeout(() => {
+          router.replace('/welcome');
+        }, 0);
+      } else if (authKey && onAuthPage) {
+        setTimeout(() => {
+          router.replace('/(tabs)');
+        }, 0);
+      }
+    };
+
+    checkNavigation();
+  }, [authKey, segments, isHydrated, rootNavigationState?.key]);
+
 
   useEffect(() => {
     // Run for immersive mode and ensure it stays hidden on resume

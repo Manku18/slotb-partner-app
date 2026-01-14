@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BG_IMAGE = require('@/assets/images/happy_duo_mobile.png');
+const BG_IMAGE = require('@/assets/images/welcome-bg.jpg');
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -183,7 +183,7 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={{ alignSelf: 'center', marginTop: 16 }}>
+              <TouchableOpacity style={{ alignSelf: 'center', marginTop: 8 }}>
                 <Text style={styles.linkText}>Forgot Password?</Text>
               </TouchableOpacity>
 

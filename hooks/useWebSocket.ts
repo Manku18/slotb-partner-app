@@ -8,8 +8,8 @@ export function useWebSocket() {
 
   useEffect(() => {
     // Initialize WebSocket connection
-    const ws = new WebSocketService(process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3000');
-    
+    const ws = new WebSocketService('wss://slotb.in/');
+
     // Handle incoming messages
     ws.onMessage((data) => {
       switch (data.type) {

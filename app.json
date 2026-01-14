@@ -4,7 +4,7 @@
     "slug": "SlotB-Partner-demo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/slotb-icon-v4.png",
+    "icon": "./assets/images/icon-premium.png",
     "scheme": "slotbpartnerdemo",
     "userInterfaceStyle": "automatic",
     "android": {
@@ -12,9 +12,7 @@
       "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/slotb-icon-v4.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon-premium.png"
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -39,19 +37,19 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon-premium.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/slotb-icon-v4.png",
+          "image": "./assets/images/splash-premium.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#162E22",
           "dark": {
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#162E22"
           }
         }
       ],
@@ -60,8 +58,18 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/slotb-icon-v4.png",
+          "icon": "./assets/images/icon-premium.png",
           "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "jsEngine": "hermes"
+          }
         }
       ]
     ],

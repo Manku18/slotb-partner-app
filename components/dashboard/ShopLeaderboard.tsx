@@ -78,10 +78,9 @@ export function ShopLeaderboard({ isOpen = true }: ShopLeaderboardProps) {
                             <View style={styles.rankSection}>
                                 <Text style={styles.rankLabel}>CURRENT RANK</Text>
                                 <View style={styles.rankDisplay}>
-                                    <Text style={styles.rankHash}>#</Text>
                                     <Text style={styles.rankNumber}>{displayRank}</Text>
                                 </View>
-                                <Text style={styles.contextText}>in Sarairanjan (12km)</Text>
+                                <Text style={styles.contextText}>In your Area (15 KM )</Text>
                             </View>
 
                             <View style={styles.verticalDivider} />

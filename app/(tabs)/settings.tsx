@@ -2,19 +2,28 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { ComingSoonModal } from '../../components/ui/ComingSoonModal';
 
 export default function SettingsScreen() {
   const { user, toggleTheme, logout } = useAppStore();
   const { colors, isDarkMode } = useTheme(); // Use Theme Hook
   const router = useRouter();
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ title: '', message: '', icon: '', gradient: ['#4F46E5', '#818CF8'] });
+
   const handlePress = (label: string) => {
-    // Dummy navigation or action
-    alert(`Clicked on ${label}`);
+    setModalConfig({
+      title: label,
+      message: 'This feature is currently under development. Stay tuned for updates!',
+      icon: 'construct',
+      gradient: ['#6366f1', '#8b5cf6']
+    });
+    setModalVisible(true);
   };
 
 
@@ -95,6 +104,14 @@ export default function SettingsScreen() {
           <SettingItem icon="log-out-outline" label="Log Out" isDestructive onPress={handleLogout} />
         </GlassCard>
       </ScrollView>
+      <ComingSoonModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        icon={modalConfig.icon as any}
+        gradient={modalConfig.gradient as any}
+      />
     </SafeAreaView>
   );
 }

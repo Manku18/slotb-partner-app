@@ -2,11 +2,7 @@ import axios from 'axios';
 import { Token } from '@/components/tokens/token.types';
 import { DashboardStats, EarningsEntry, Partner } from '@/store/useAppStore';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
-  ? (process.env.EXPO_PUBLIC_API_BASE_URL.endsWith('/')
-    ? process.env.EXPO_PUBLIC_API_BASE_URL + 'shop_api.php'
-    : process.env.EXPO_PUBLIC_API_BASE_URL + '/shop_api.php')
-  : 'https://slotb.in/shop_api.php';
+const API_BASE_URL = 'https://slotb.in/shop_api.php';
 
 console.log("API URL Configured:", API_BASE_URL);
 
@@ -382,50 +378,24 @@ export const apiService = {
   },
 
   async getPlans(): Promise<any[]> {
-    // Mock Plan Data (Replace with API call when ready)
-    return [
-      {
-        id: 'free',
-        name: 'Free',
-        price: '₹0',
-        period: '/mo',
-        features: [
-          { text: 'Basic features', included: true },
-          { text: 'Limited clients (50/mo)', included: true },
-          { text: 'Analytics', included: false },
-        ],
-        buttonText: 'Current Plan',
-        recommended: false,
-      },
-      {
-        id: 'pro',
-        name: 'Pro',
-        price: '₹499',
-        period: '/mo',
-        features: [
-          { text: 'Advanced tools', included: true },
-          { text: 'Unlimited clients', included: true },
-          { text: 'Priority support', included: true },
-          { text: 'Custom Branding', included: false },
-        ],
-        buttonText: 'Upgrade to Pro',
-        recommended: true,
-      },
-      {
-        id: 'premium',
-        name: 'Premium',
-        price: '₹999',
-        period: '/mo',
-        features: [
-          { text: 'All Pro features', included: true },
-          { text: 'Dedicated account manager', included: true },
-          { text: 'Custom integrations', included: true },
-          { text: '0% Commision', included: true },
-        ],
-        buttonText: 'Get Premium',
-        recommended: false,
-      },
-    ];
+    const { useAppStore } = require('@/store/useAppStore');
+    const shopId = useAppStore.getState().user?.id;
+    if (!shopId) return [];
+
+    try {
+      const response = await api.post('', {
+        action: 'fetch_plans',
+        shop_id: shopId
+      });
+
+      if (response.data.status === 'success') {
+        return response.data.plans || [];
+      }
+      return [];
+    } catch (e) {
+      console.error("Fetch Plans Error", e);
+      return [];
+    }
   },
 
   async updatePlan(planId: string, shopId: string): Promise<boolean> {

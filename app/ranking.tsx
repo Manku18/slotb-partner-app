@@ -168,19 +168,21 @@ export default function RankingScreen() {
                             </>
                         }
                         ListEmptyComponent={
-                            <View style={styles.emptyStateContainer}>
-                                <View style={styles.emptyIconCircle}>
-                                    <Ionicons name="trophy-outline" size={40} color="rgba(255,255,255,0.5)" />
+                            top3.length === 0 ? (
+                                <View style={styles.emptyStateContainer}>
+                                    <View style={styles.emptyIconCircle}>
+                                        <Ionicons name="trophy-outline" size={40} color="rgba(255,255,255,0.5)" />
+                                    </View>
+                                    <Text style={styles.emptyTitle}>No Rankings Yet</Text>
+                                    <Text style={styles.emptySubtitle}>
+                                        Be the first to score points in this area! {"\n"}
+                                        Try checking 'Global' or changing timeframe.
+                                    </Text>
+                                    <TouchableOpacity style={styles.refreshButton} onPress={refetch}>
+                                        <Text style={styles.refreshButtonText}>Refresh</Text>
+                                    </TouchableOpacity>
                                 </View>
-                                <Text style={styles.emptyTitle}>No Rankings Yet</Text>
-                                <Text style={styles.emptySubtitle}>
-                                    Be the first to score points in this area! {"\n"}
-                                    Try checking 'Global' or changing timeframe.
-                                </Text>
-                                <TouchableOpacity style={styles.refreshButton} onPress={refetch}>
-                                    <Text style={styles.refreshButtonText}>Refresh</Text>
-                                </TouchableOpacity>
-                            </View>
+                            ) : null
                         }
                         contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16 }}
                         showsVerticalScrollIndicator={false}
@@ -190,11 +192,15 @@ export default function RankingScreen() {
                     />
                 )}
 
-                {/* Sticky User Stat Footer */}
+                {/* Sticky User Stat Footer - Now Clickable */}
                 {isEligible && myRanking && isFooterVisible && (
-                    <View style={styles.footerContainer}>
+                    <TouchableOpacity
+                        style={styles.footerContainer}
+                        activeOpacity={0.9}
+                        onPress={() => setSelectedPartner(myRanking)}
+                    >
                         <LinearGradient
-                            colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+                            colors={['rgba(30, 27, 75, 0.95)', 'rgba(49, 46, 129, 0.95)']}
                             style={styles.footerCard}
                         >
                             <View style={styles.footerInner}>
@@ -209,7 +215,10 @@ export default function RankingScreen() {
                                             <Text style={styles.footerMeTagText}>ME</Text>
                                         </View>
                                     </View>
-                                    <Text style={styles.footerSubText}>{myRanking.performance.completedBookings} bookings</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                        <Text style={styles.footerSubText}>{myRanking.performance.completedBookings} bookings</Text>
+                                        <Ionicons name="chevron-up" size={12} color="rgba(255,255,255,0.4)" />
+                                    </View>
                                 </View>
 
                                 <View style={{ alignItems: 'flex-end' }}>
@@ -218,7 +227,7 @@ export default function RankingScreen() {
                                 </View>
                             </View>
                         </LinearGradient>
-                    </View>
+                    </TouchableOpacity>
                 )}
             </SafeAreaView>
 
@@ -308,71 +317,83 @@ const styles = StyleSheet.create({
     rankRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.95)',
-        padding: 12,
-        borderRadius: 16,
-        marginBottom: 2,
+        backgroundColor: 'rgba(30, 41, 59, 0.6)', // Dark Slate Glass
+        padding: 14,
+        borderRadius: 20,
+        marginBottom: 4, // Reduced padding between items
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.08)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     meRowGlow: {
-        backgroundColor: '#F5F3FF', // Very light purple
-        borderWidth: 2,
-        borderColor: '#818CF8',
+        backgroundColor: 'rgba(79, 70, 229, 0.15)', // Indigo Tint
+        borderColor: '#6366F1', // Indigo glow
+        borderWidth: 1.5,
     },
     rankBadgeContainer: {
-        width: 32,
+        width: 36,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 8,
+        marginRight: 10,
     },
-    rankText: { fontSize: 16, fontWeight: 'bold', color: '#6B7280' },
-    meRankText: { color: '#4F46E5' },
+    rankText: { fontSize: 16, fontWeight: 'bold', color: '#9CA3AF' },
+    meRankText: { color: '#818CF8', fontWeight: '800' }, // Lighter Indigo
 
-    avatarContainer: { marginRight: 12 },
-    meAvatarBorder: { borderWidth: 2, borderColor: '#4F46E5', borderRadius: 22, padding: 2 },
-    avatarGradient: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-    avatarText: { fontSize: 16, fontWeight: 'bold', color: '#3730A3' },
+    avatarContainer: { marginRight: 14 },
+    meAvatarBorder: { borderWidth: 2, borderColor: '#818CF8', borderRadius: 24, padding: 2 },
+    avatarGradient: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+    avatarText: { fontSize: 18, fontWeight: 'bold', color: '#1E1B4B' },
 
     infoContainer: { flex: 1 },
-    partnerName: { fontSize: 14, fontWeight: '700', color: '#1F2937', marginBottom: 2 },
-    meNameText: { color: '#4F46E5' },
-    statsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    statsText: { fontSize: 11, color: '#6B7280' },
+    partnerName: { fontSize: 15, fontWeight: '600', color: '#F3F4F6', marginBottom: 2 }, // White text
+    meNameText: { color: '#818CF8' }, // Indigo highlight
+    statsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    statsText: { fontSize: 12, color: '#94A3B8' }, // Muted text
 
     scoreContainer: { alignItems: 'flex-end', minWidth: 60 },
-    scoreText: { fontSize: 16, fontWeight: '800', color: '#111827' },
-    meScoreText: { color: '#4F46E5' },
-    ptsText: { fontSize: 10, color: '#9CA3AF', fontWeight: '600' },
+    scoreText: { fontSize: 16, fontWeight: 'bold', color: '#FFD700' }, // Gold score
+    meScoreText: { color: '#FFD700' },
+    ptsText: { fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
 
     footerContainer: { position: 'absolute', bottom: 20, left: 16, right: 16 },
     footerCard: {
-        borderRadius: 20,
+        borderRadius: 24,
         padding: 1, // border effect
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+        elevation: 10,
     },
     footerInner: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#1E1B4B', // Dark Indigo
-        borderRadius: 20,
-        padding: 12,
+        borderRadius: 23,
+        padding: 14,
     },
     footerRankBadge: {
-        width: 44, height: 44, borderRadius: 22, backgroundColor: '#4F46E5',
+        width: 48, height: 48, borderRadius: 24, backgroundColor: '#4F46E5',
         alignItems: 'center', justifyContent: 'center',
         shadowColor: '#4F46E5', shadowOpacity: 0.5, shadowRadius: 8
     },
-    footerRankVal: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-    footerMeText: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
+    footerRankVal: { color: '#FFF', fontWeight: 'bold', fontSize: 18 },
+    footerMeText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
     footerMeTag: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-    footerMeTagText: { fontSize: 8, color: '#FFF', fontWeight: 'bold' },
-    footerSubText: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
-    footerScoreVal: { color: '#FFD700', fontSize: 18, fontWeight: 'bold' },
+    footerMeTagText: { fontSize: 9, color: '#FFF', fontWeight: 'bold' },
+    footerSubText: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+    footerScoreVal: { color: '#FFD700', fontSize: 20, fontWeight: 'bold' },
     footerScoreLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, textAlign: 'right' },
 
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-    modalContent: { width: '100%', backgroundColor: '#FFF', borderRadius: 24, padding: 4 },
-    modalCloseBtn: { alignSelf: 'center', padding: 12 },
-    modalCloseText: { color: '#4B5563', fontWeight: '600' }
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+    modalContent: { width: '100%', backgroundColor: '#1F2937', borderRadius: 24, padding: 4 }, // Dark modal
+    modalCloseBtn: { alignSelf: 'center', padding: 16 },
+    modalCloseText: { color: '#9CA3AF', fontWeight: '600' }
 });
 

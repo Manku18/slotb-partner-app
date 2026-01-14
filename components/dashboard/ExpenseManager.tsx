@@ -190,26 +190,30 @@ export function ExpenseManager() {
                         ) : sortedCategories.length === 0 ? (
                             <Text style={[styles.emptyText, { color: colors.textTertiary }]}>No expenses recorded.</Text>
                         ) : (
-                            sortedCategories.map(([cat, amount], index) => (
-                                <View key={cat} style={styles.categoryRow}>
-                                    <View style={styles.catRowLeft}>
-                                        <View style={[styles.bullet, { backgroundColor: colors.primary }]} />
-                                        <Text style={[styles.catName, { color: colors.textPrimary }]}>{cat}</Text>
+                            sortedCategories.map(([cat, amount], index) => {
+                                const COLORS = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#64748B'];
+                                const color = COLORS[index % COLORS.length];
+                                return (
+                                    <View key={cat} style={styles.categoryRow}>
+                                        <View style={styles.catRowLeft}>
+                                            <View style={[styles.bullet, { backgroundColor: color }]} />
+                                            <Text style={[styles.catName, { color: colors.textPrimary }]}>{cat}</Text>
+                                        </View>
+                                        <Text style={[styles.catAmount, { color: colors.textSecondary }]}>₹{amount.toLocaleString('en-IN')}</Text>
                                     </View>
-                                    <Text style={[styles.catAmount, { color: colors.textSecondary }]}>₹{amount.toLocaleString('en-IN')}</Text>
-                                </View>
-                            ))
+                                )
+                            })
                         )}
                     </View>
 
                     {/* Interactive Add Button */}
                     <TouchableOpacity
-                        style={[styles.addButton, { backgroundColor: colors.surface, borderColor: colors.primary }]}
+                        style={styles.addButton}
                         onPress={() => setModalVisible(true)}
-                        activeOpacity={0.7}
+                        activeOpacity={0.8}
                     >
-                        <Ionicons name="add-circle" size={20} color={colors.primary} />
-                        <Text style={[styles.addButtonText, { color: colors.primary }]}>Add Expense</Text>
+                        <Ionicons name="add-circle" size={20} color="#FFF" />
+                        <Text style={styles.addButtonText}>Add Expense</Text>
                     </TouchableOpacity>
                 </View>
             </DashboardCard>
@@ -328,14 +332,15 @@ export function ExpenseManager() {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 8,
+        paddingTop: 0, // Reduced top padding
+        paddingBottom: 4, // Reduced bottom padding
     },
     // Tab Styles
     tabContainer: {
         flexDirection: 'row',
         padding: 4,
         borderRadius: 12,
-        marginBottom: 16,
+        marginBottom: 12, // Reduced margin
     },
     tab: {
         flex: 1,
@@ -350,47 +355,54 @@ const styles = StyleSheet.create({
     // Total Display
     totalContainer: {
         alignItems: 'center',
-        paddingVertical: 12,
+        paddingVertical: 16,
         marginBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: '#FEF2F2', // Light Red Background
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#FECACA',
     },
     totalLabel: {
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 4,
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 2,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     totalValue: {
-        fontSize: 28,
-        fontWeight: '800',
+        fontSize: 32,
+        fontWeight: '900',
     },
     // Breakdown Styles
     breakdownContainer: {
-        marginBottom: 16,
+        marginBottom: 12,
+        gap: 8,
     },
     categoryRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
+        backgroundColor: 'rgba(0,0,0,0.02)',
+        padding: 8,
+        borderRadius: 8,
     },
     catRowLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 10,
     },
     bullet: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
     },
     catName: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     catAmount: {
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     emptyText: {
         textAlign: 'center',
@@ -403,25 +415,30 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 12,
+        paddingVertical: 14,
         borderRadius: 12,
-        borderWidth: 1,
-        borderStyle: 'dashed',
+        backgroundColor: '#4338ca', // Indigo 700
         gap: 8,
+        shadowColor: "#4338ca",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     addButtonText: {
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: 'bold',
+        color: '#FFF',
     },
     // Modal Styles
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'flex-end',
     },
     modalContent: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
         padding: 24,
         paddingBottom: 40,
     },
@@ -433,59 +450,64 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: '700',
+        fontWeight: '800',
     },
     label: {
         fontSize: 13,
-        fontWeight: '600',
+        fontWeight: '700',
         marginBottom: 8,
         marginLeft: 4,
     },
     input: {
-        height: 50,
-        borderRadius: 12,
+        height: 56,
+        borderRadius: 16,
         borderWidth: 1,
         paddingHorizontal: 16,
-        fontSize: 16,
+        fontSize: 18,
+        fontWeight: '600',
         marginBottom: 20,
     },
     categoryGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
-        marginBottom: 24,
+        marginBottom: 32,
     },
     categoryChip: {
-        paddingHorizontal: 14,
-        paddingVertical: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         borderRadius: 20,
         borderWidth: 1,
     },
     categoryText: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
     },
     saveButton: {
-        height: 52,
+        height: 56,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
+        shadowColor: '#4F46E5',
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6,
     },
     saveButtonText: {
         color: '#FFF',
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '800',
     },
     // History Modal Items
     item: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
+        paddingVertical: 14,
     },
     iconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -494,19 +516,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     title: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '600',
         marginBottom: 2,
     },
     subtitle: {
-        fontSize: 11,
+        fontSize: 12,
     },
     rightAction: {
         alignItems: 'flex-end',
         gap: 4
     },
     amount: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '700',
     },
 });

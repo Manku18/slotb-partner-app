@@ -116,7 +116,7 @@ export default function DashboardScreen() {
             apiService.getShopStatus(user.id).then(setShopOpen);
             refreshDashboard();
 
-            const interval = setInterval(refreshDashboard, 30000);
+            const interval = setInterval(refreshDashboard, 15000); // 15s Real-time
             return () => clearInterval(interval);
         }
     }, [user?.id]);
@@ -184,7 +184,10 @@ export default function DashboardScreen() {
                 {/* 3. Expense Tracker (New) */}
                 <ExpenseManager />
 
-                {/* 4. Shop Media and Reels */}
+                {/* 4. Shop Service - Moved Here */}
+                <ServiceManagementCard />
+
+                {/* 5. Shop Media and Reels */}
                 <TouchableOpacity
                     style={[styles.manageServicesBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 16 }]}
                     onPress={() => setMediaModalVisible(true)}
@@ -198,9 +201,6 @@ export default function DashboardScreen() {
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
-
-                {/* 5. Shop Service */}
-                <ServiceManagementCard />
 
                 {/* 6. Review and Summary (Combined Reviews + Business Insights) */}
                 <ReviewsCard onRefresh={refreshDashboard} />
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 16,
         borderWidth: 1,
-        marginTop: 20,
+        marginTop: 8, // Reduced from 20
     },
     manageServicesIcon: {
         width: 48,
